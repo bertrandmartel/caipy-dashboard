@@ -216,7 +216,6 @@ class App extends Component {
         this.checkItemType();
         this.checkDate();
         this.fit = this.fit.bind(this);
-        this.filter = this.filter.bind(this);
         this.refresh = this.refresh.bind(this);
         this.updateType = this.updateType.bind(this);
         this.setUrlSettings = this.setUrlSettings.bind(this);
