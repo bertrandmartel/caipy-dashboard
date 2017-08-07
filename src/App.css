@@ -1,0 +1,212 @@
+@import url(http://fonts.googleapis.com/icon?family=Material+Icons);
+
+.chip {
+    color: black;
+    background-color: white;
+}
+
+.modal.modal-fixed-footer {
+    heigth: 30%;
+}
+
+.error-message {
+    color: red;
+}
+
+.main .api-url-input.col {
+    padding: 0px;
+}
+
+.modal {
+    overflow-y: hidden;
+}
+
+.main .api-url-input.col .input-field {
+    padding: 0px;
+}
+
+.pagination li.active {
+    background-color: #1e88e5;
+}
+
+.tab-main .tabs .indicator {
+    background-color: #1e88e5;
+}
+
+.tabs .tab a.active {
+    color: #1e88e5;
+}
+
+.tabs .tab a:hover {
+    color: #1e88e5;
+}
+
+.tabs .tab a {
+    color: #1e88e5;
+}
+
+.tab-main {
+    margin: 10px 0px 0px 0px;
+    padding: 0px;
+}
+
+.main input[type=text]:focus:not([readonly])+label {
+    color: #1e88e5;
+}
+
+.main input[type=text]:focus:not([readonly]) {
+    border-bottom: 1px solid #1e88e5;
+    box-shadow: 0 1px 0 0 #1e88e5;
+    color: #000000;
+}
+
+.modal input[type=text]:focus:not([readonly])+label {
+    color: #1e88e5;
+}
+
+.modal input[type=text]:focus:not([readonly]) {
+    border-bottom: 1px solid #1e88e5;
+    box-shadow: 0 1px 0 0 #1e88e5;
+    color: #000000;
+}
+
+
+div .modal .modal-footer .btn {
+    margin: 10px;
+}
+
+.main .collection {
+    margin: 0px;
+    border-bottom-width: 0px;
+}
+
+.footer.page-footer {
+    padding-top: 0px;
+}
+
+.footer.page-footer .container .row {
+    display: none;
+}
+
+.footer .footer-copyright .container div {
+    text-align: center;
+}
+
+.footer.footer-copyright {
+    padding: 0px;
+}
+
+.body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.main {
+    flex: 1 0 auto;
+}
+
+.nav-wrapper {
+    padding-left: 35px;
+    padding-right: 35px;
+}
+
+.hidden {
+    display: none;
+}
+
+.filter-btn button {
+    margin: 20px;
+}
+
+.filter-row {
+    margin-top: 10px;
+    padding-left: 25px;
+    padding-right: 25px;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+.center-div {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.title {
+    margin: 15px;
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+.timeline-object {
+    margin: 15px;
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+
+.vis-timeline {
+    font-size: 14pt;
+    background: #FFFFFF;
+    font-family: Roboto;
+}
+
+.vis-item.program {
+    box-shadow: 5px 5px 20px rgba(128, 128, 128, 0.5);
+}
+
+.vis-item {
+    background-color: #4182F2;
+    font-size: 15pt;
+    color: black;
+}
+
+.vis-point.caipy.vis-selected {
+    border-color: white;
+    border-width: 2px;
+    background-color: white;
+}
+
+.vis-item.vis-selected {
+    border-color: white;
+    border-width: 2px;
+}
+
+.vis-time-axis .vis-text {
+    padding-top: 10px;
+    padding-left: 10px;
+}
+
+.vis-time-axis .vis-grid.vis-minor {
+    border-width: 2px;
+    border-color: #E1E1E1;
+}
+
+.vis-item.caipy {
+    color: white;
+    border-color: #DE463D;
+}
+
+.vis-item.program {
+    color: white;
+    background-color: #1E88E5;
+}
+
+.vis-left label {
+    font-size: 14pt;
+    color: black;
+    font-family: Roboto
+}
+
+.vis-center label {
+    font-size: 12pt;
+    color: white;
+    font-family: Roboto
+}
+
+.caipy-group {
+    background-color: #EEEEEE;
+}
