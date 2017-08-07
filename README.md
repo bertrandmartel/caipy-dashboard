@@ -1,5 +1,8 @@
 # Caipy Dashboard
 
+[![Build Status](https://travis-ci.org/bertrandmartel/caipy-dashboard.svg?branch=master)](https://travis-ci.org/bertrandmartel/caipy-dashboard)
+[![License](http://img.shields.io/:license-mit-blue.svg)](LICENSE.md)
+
 A ReactJS powered material dashboard featuring Ad detection in TV programs from an external API from [Caipy](http://www.caipy.com/)
 
 ### [Live preview](http://bertrandmartel.github.io/caipy-dashboard)
