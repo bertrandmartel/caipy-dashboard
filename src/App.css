@@ -1,5 +1,27 @@
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 
+.picker__date-display,
+.picker__weekday-display,
+.picker__day--selected,
+.picker__day--selected:hover,
+.picker--focused .picker__day--selected {
+    background-color: #1e88e5;
+}
+
+.picker__nav--prev:hover,
+.picker__nav--next:hover,
+button.picker__today:focus,
+button.picker__clear:focus,
+button.picker__close:focus {
+    background-color: #90CAF9;
+}
+
+.picker__today,
+.picker__close,
+.picker__day.picker__day--today {
+    color: #1e88e5;
+}
+
 .chip {
     color: black;
     background-color: white;
