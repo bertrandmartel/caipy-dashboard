@@ -7,13 +7,7 @@ import vis from 'vis';
  * zoom offset value in ms added and substracted to start/stop time of the selected event 
  * @type {Number}
  */
-const zoomHourOffset = 1 * 60 * 60 * 1000;
-
-/**
- * default type of DataSet items for Caipy events
- * @type {String}
- */
-const defaultItemType = "range";
+const zoomHourOffset = 0.5 * 60 * 60 * 1000;
 
 /**
  * The Timeline object used to render a vis.js timeline
@@ -40,12 +34,11 @@ export class Timeline extends Component {
         if (selection.length > 0) {
             this.timeline.focus(selection);
             this.timeline.setSelection([]);
-            var elements = selection[0].split(":");
-            let startDate = moment(new Date(parseInt(elements[0], 10) - zoomHourOffset)).format("YYYY-MM-DD HH:mm:ss");
-            let stopDate = moment(new Date(parseInt(elements[1], 10) + zoomHourOffset)).format("YYYY-MM-DD HH:mm:ss");
+            let startDate = moment(this.timeline.itemSet.items[selection[0]].data.start.getTime() - zoomHourOffset).format("YYYY-MM-DD HH:mm:ss");
+            let stopDate = moment(this.timeline.itemSet.items[selection[0]].data.end.getTime() + zoomHourOffset).format("YYYY-MM-DD HH:mm:ss");
             this.timeline.setWindow(startDate, stopDate);
         } else {
-            this.timeline.setWindow(this.date.start, this.date.stop);
+            //this.timeline.setWindow(this.date.start, this.date.stop);
         }
     }
 
@@ -56,13 +49,14 @@ export class Timeline extends Component {
      * @param  {String} type  type of items ("point"/"range")
      * @return {Object}       Options object
      */
-    getOptions(start, stop, type) {
+    getOptions(window, options) {
+
         return {
             orientation: 'top',
-            stack: false,
-            type: type,
-            start: start,
-            end: stop,
+            stack: options.stack,
+            type: options.type,
+            start: window.start,
+            end: window.end,
             tooltip: {
                 followMouse: true
             },
@@ -77,23 +71,6 @@ export class Timeline extends Component {
                 return ReactDOM.render(<GroupTemplate group={group} />, element);
             }
         }
-    }
-
-    /**
-     * Update the type of items ("point"/"range")
-     * 
-     * @param  {Object} items object items
-     */
-    updateType(props) {
-        var type = props.itemType ? "point" : "range";
-
-        props.data.items.forEach((item) => {
-            if (item.group === 1) {
-                item.type = type;
-                props.data.items.update(item);
-            }
-        });
-        return props.data.items;
     }
 
     updateTimelineItems(items) {
@@ -113,9 +90,9 @@ export class Timeline extends Component {
             case "fit":
                 this.fit();
                 break;
-            case "update-type":
-                var items = this.updateType(this.props);
-                this.updateTimelineItems(items);
+            case "options":
+                var options = this.getOptions(this.timeline.getWindow(), this.props.options);
+                this.timeline.setOptions(options);
                 break;
             case "update":
                 this.updateData(this.props, false);
@@ -129,6 +106,27 @@ export class Timeline extends Component {
     }
 
     /**
+     * Build timeline window, a dichotomy is used with addition of a fixed value
+     * 
+     * @param  {vis.DataSet} items data set featured in the timeline
+     * @return {Object}       window start & end values
+     */
+    getWindow(items) {
+        var minDate = items.min("start").start;
+        var maxDate = items.max("end").end;
+
+        var diff = maxDate.getTime() - minDate.getTime();
+
+        var windowStart = new Date(minDate.getTime() + diff / 2);
+        var windowEnd = new Date(windowStart.getTime() + 1 * 60 * 60 * 1000);
+
+        return {
+            start: windowStart,
+            end: windowEnd
+        }
+    }
+
+    /**
      * Create or update timeline
      * 
      * @param  {Object}  config properties
@@ -136,23 +134,19 @@ export class Timeline extends Component {
      */
     updateData(config, create) {
         var container = document.getElementById(config.data.channelName);
-            
+
         this.date.start = config.data.start;
         this.date.stop = config.data.stop;
 
-        var options = this.getOptions(config.data.start, config.data.stop, defaultItemType);
+        var window = this.getWindow(config.data.items);
 
-        config.data.items = this.updateType(config);
+        var options = this.getOptions(window, config.options);
 
-        if (!create) {
-            this.timeline.setOptions(options);
-            this.timeline.setData({
-                groups: config.data.groups,
-                items: config.data.items
-            });
-        } else {
-            this.timeline = new vis.Timeline(container, config.data.items, config.data.groups, options);
+        if (create) {
+            this.timeline = new vis.Timeline(container, null, options);
         }
+        this.timeline.setGroups(config.data.groups);
+        this.timeline.setItems(config.data.items);
     }
 
     render() {

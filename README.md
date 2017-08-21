@@ -7,7 +7,7 @@ A ReactJS powered material dashboard featuring Ad detection in TV programs from 
 
 ### [Live Application](http://bertrandmartel.github.io/caipy-dashboard)
 
-[![dashboard](https://user-images.githubusercontent.com/5183022/29038749-1cc10104-7ba9-11e7-89e1-2d190cd6a1a4.png)](http://bertrandmartel.github.io/caipy-dashboard)
+[![dashboard](https://user-images.githubusercontent.com/5183022/29038991-e12d4822-7ba9-11e7-8b19-d7471958a8ea.png)](http://bertrandmartel.github.io/caipy-dashboard)
 
 This project is using :
 

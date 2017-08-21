@@ -6,19 +6,19 @@ import './App.css';
 //react
 import React, { Component } from 'react';
 
-//demo data
-import demo from './demo.json';
-
 //react components
 import { Chip, Tabs, Tab, Footer, Collection, CollectionItem, Row, Col, Preloader, Navbar, NavItem, Icon } from 'react-materialize';
 import { Timeline } from './Timeline.js';
-import { DataSetItem } from './DataSet.js';
+import { CaipyDataSetItem, EpgDataSetItem } from './DataSet.js';
 import { FilterView } from './Filter.js';
 import { SettingsView } from './Settings.js';
 
 //utility for Caipy (parse JSON data)
-import * as ApiUtils from './caipy-api.js';
+import * as ApiUtils from './CaipyApi.js';
 import * as Storage from './Storage.js';
+
+//moment for date parsing
+import moment from 'moment';
 
 // jquery & materialize
 import $ from 'jquery';
@@ -85,12 +85,9 @@ class TopNavbar extends Component {
         }
     }
 
-    /**
-     * update the type of item in the timeline ("point"/"range")
-     */
-    updateType() {
-        if (typeof this.props.onUpdateType === 'function') {
-            this.props.onUpdateType();
+    stackToggle() {
+        if (typeof this.props.onStackToggle === 'function') {
+            this.props.onStackToggle();
         }
     }
 
@@ -116,7 +113,7 @@ class TopNavbar extends Component {
     render() {
         return <Navbar href={process.env.PUBLIC_URL} brand='Caipy Dashboard' className="blue darken-1" right>
                     <NavItem onClick={() => this.fit()}><Icon medium>center_focus_strong</Icon></NavItem>
-                    <NavItem onClick={() => this.updateType()}><Icon medium>timeline</Icon></NavItem>
+                     <NavItem onClick={() => this.stackToggle()}><Icon medium>clear_all</Icon></NavItem>
                     <NavItem onClick={() => this.refresh("update")}><Icon>refresh</Icon></NavItem>
                     <NavItem onClick={() => this.urlSettings()}><Chip close={false}>{this.props.mode} mode</Chip></NavItem> 
                     <NavItem href="https://github.com/bertrandmartel/caipy-dashboard" target="_blank" ><Icon>code</Icon></NavItem>
@@ -141,8 +138,9 @@ class TabCollection extends Component {
                                                         <CollectionItem className="coll-item" key={value.channelName + "-coll"}>
                                                             <Timeline key={value.channelName}
                                                                       data={value}
+                                                                      options={this.props.options}
                                                                       actionType={this.props.actionType}
-                                                                      itemType={this.props.itemType}/>
+                                                                      />
                                                         </CollectionItem>             
                                                );
                                             },this)
@@ -150,13 +148,30 @@ class TabCollection extends Component {
                                     </Collection>
                                 </div>
                             </Tab>
-                            <Tab title="dataset" active>
+                            <Tab title="event dataset" active>
                                 <div className={this.props.ready ? "" : "hidden"}>
                                     <Collection>
                                         {
-                                            this.props.data.map(function(value, index){
+                                            this.props.caipyData.map(function(value, index){
                                                 return (
-                                                    <DataSetItem key={value.name} 
+                                                    <CaipyDataSetItem key={value.name} 
+                                                                 name={value.name}
+                                                                 rows={value.rows}
+                                                                 length={value.rows.length}
+                                                                 perPage={15}/>
+                                               );
+                                            },this)
+                                        }
+                                    </Collection>
+                                </div>
+                            </Tab>
+                            <Tab title="epg dataset" active>
+                                <div className={this.props.ready ? "" : "hidden"}>
+                                    <Collection>
+                                        {
+                                            this.props.epgData.map(function(value, index){
+                                                return (
+                                                    <EpgDataSetItem key={value.name} 
                                                                  name={value.name}
                                                                  rows={value.rows}
                                                                  length={value.rows.length}
@@ -189,10 +204,12 @@ class App extends Component {
     state = {
         ready: false,
         items: [],
-        data: [],
+        caipyData: [],
+        epgData: [],
         mode: "demo",
         url: Storage.getApiUrl(),
         message: "",
+        options: this.options,
         startDate: this.date.startDate,
         endDate: this.date.endDate
     };
@@ -207,20 +224,32 @@ class App extends Component {
      * default timeline item type (false for "range" / true for "point")
      * @type {Boolean}
      */
-    itemType = false;
+    options = {
+        stack: false,
+        type: "range"
+    };
 
     constructor() {
         super();
         this.items = [];
-        this.data = [];
-        this.checkItemType();
+        this.caipyData = [];
+        this.epgData = [];
         this.checkDate();
+        this.checkOptions();
         this.fit = this.fit.bind(this);
+        this.stackToggle = this.stackToggle.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.updateType = this.updateType.bind(this);
         this.setUrlSettings = this.setUrlSettings.bind(this);
         this.setMode = this.setMode.bind(this);
         this.setFilterSettings = this.setFilterSettings.bind(this);
+    }
+
+    /**
+     * Initialize options for timeline
+     */
+    checkOptions() {
+        this.options.stack = Storage.getStack();
+        this.options.type = Storage.getType();
     }
 
     /**
@@ -233,19 +262,6 @@ class App extends Component {
             endDate !== null && endDate !== "undefined") {
             this.date.startDate = startDate;
             this.date.endDate = endDate;
-        }
-    }
-
-    /**
-     * initiliaze timeline item type
-     */
-    checkItemType() {
-        var type = Storage.getItemType();
-        if (type === null) {
-            Storage.setItemType(false);
-            this.itemType = false;
-        } else {
-            this.itemType = (type === 'true');
         }
     }
 
@@ -268,17 +284,40 @@ class App extends Component {
      * @param  {Object} data       JSON data object (from query response or from local JSON file)
      * @param  {String} actionType type of action to perform ("create","update","idle")
      */
-    parseItems(data, actionType) {
-        this.items = ApiUtils.buildItems(data);
-        this.data = data;
+    parseItems(caipyData, epgData, items, actionType) {
+        this.items = items;
+        this.caipyData = caipyData;
+        this.epgData = epgData;
         this.setState({
             actionType: actionType,
             ready: true,
-            data: this.data,
+            caipyData: this.caipyData,
+            epgData: this.epgData,
             items: this.items,
             mode: this.mode,
+            options: this.options,
             url: Storage.getApiUrl(),
             message: "",
+            startDate: this.date.startDate,
+            endDate: this.date.endDate
+        });
+    }
+
+    /**
+     * Error function for showing error message
+     * 
+     */
+    showError() {
+        this.setState({
+            actionType: "idle",
+            ready: false,
+            epgData: [],
+            caipyData: [],
+            items: this.items,
+            mode: this.mode,
+            options: this.options,
+            url: Storage.getApiUrl(),
+            message: "error occured",
             startDate: this.date.startDate,
             endDate: this.date.endDate
         });
@@ -290,15 +329,16 @@ class App extends Component {
      * @return {[type]}            [description]
      */
     refresh(actionType) {
-
         var that = this;
 
         that.setState({
             actionType: "idle",
             ready: false,
-            data: that.data,
+            epgData: that.epgData,
+            caipyData: that.caipyData,
             items: that.items,
             mode: this.mode,
+            options: this.options,
             url: Storage.getApiUrl(),
             message: "",
             startDate: this.date.startDate,
@@ -306,35 +346,42 @@ class App extends Component {
         });
 
         if (this.mode === "live") {
-            fetch(Storage.getApiUrl() + "?type=channels&startdate=" + this.date.startDate + "&starttime=00:00:00&" +
-                    "enddate=" + this.date.endDate + "&endtime=23:59:59")
-                .then(function(response) {
-                    if (response.status >= 400) {
-                        throw new Error("Bad response from server");
+
+            var startDate = moment(this.date.startDate, "MM/DD/YYYY").format("YYYYMMDDHHmmSS");
+            var stopDate = moment(this.date.endDate, "MM/DD/YYYY").format("YYYYMMDDHHmmSS");
+
+            //get channel list
+            ApiUtils.getPrograms(Storage.getApiUrl(), startDate, stopDate, function(err, programRes, epgData) {
+                if (err) {
+                    console.log(err);
+                    return that.showError();
+                }
+                ApiUtils.getCaipyData(Storage.getApiUrl(), startDate, stopDate, "default", programRes, function(err, caipyRes, caipyData) {
+                    if (err) {
+                        console.log(err);
+                        return that.showError();
                     }
-                    return response.json();
+
+                    var items = ApiUtils.buildChannelMap(startDate, stopDate, caipyRes);
+
+                    that.parseItems(caipyData, epgData, items, actionType);
                 })
-                .then(function(data) {
-                    that.parseItems(data, actionType);
-                })
-                .catch(function(e) {
-                    console.log(e);
-                    //show error message and set mode to "idle"
-                    that.setState({
-                        actionType: "idle",
-                        ready: false,
-                        data: that.data,
-                        items: that.items,
-                        mode: that.mode,
-                        url: Storage.getApiUrl(),
-                        message: "error occured",
-                        startDate: that.date.startDate,
-                        endDate: that.date.endDate
-                    });
-                });
+            });
         } else {
-            //in demo mode just parse the raw item
-            that.parseItems(demo, actionType);
+            var data = require('./demo/demo-data.json');
+
+            var channels = [
+                require('./demo/demo-tf1.json'),
+                require('./demo/demo-france2.json'),
+                require('./demo/demo-m6.json')
+            ];
+
+            var epgResult = ApiUtils.getDemoProgram(channels);
+            var caipyResult = ApiUtils.getDemoEvents(data, epgResult.channels);
+
+            var items = ApiUtils.buildChannelMap(startDate, stopDate, caipyResult.channels);
+
+            that.parseItems(caipyResult.caipy, epgResult.programs, items, actionType);
         }
     }
 
@@ -385,9 +432,11 @@ class App extends Component {
         this.setState({
             actionType: "fit",
             ready: true,
-            data: this.data,
+            caipyData: this.caipyData,
+            epgData: this.epgData,
             items: this.items,
             mode: this.mode,
+            options: this.options,
             url: Storage.getApiUrl(),
             message: "",
             startDate: this.date.startDate,
@@ -395,23 +444,22 @@ class App extends Component {
         })
     }
 
-    /**
-     * toggle timeline item type ("range" or "type")
-     */
-    updateType() {
-        this.itemType = !this.itemType;
-        Storage.setItemType(this.itemType);
+    stackToggle() {
+        this.options.stack = !this.options.stack;
+        Storage.setStack(this.options.stack);
         this.setState({
-            actionType: "update-type",
+            actionType: "options",
             ready: true,
-            data: this.data,
+            caipyData: this.caipyData,
+            epgData: this.epgData,
             items: this.items,
             mode: this.mode,
+            options: this.options,
             url: Storage.getApiUrl(),
             message: "",
             startDate: this.date.startDate,
             endDate: this.date.endDate
-        });
+        })
     }
 
     render() {
@@ -420,8 +468,8 @@ class App extends Component {
                 <div className="main">
                     <TopNavbar mode={this.state.mode}
                                onFit={this.fit}
-                               onUpdateType={this.updateType}
                                onRefresh={this.refresh}
+                               onStackToggle={this.stackToggle}
                                onUrlSettings={this.urlSettings} />
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 mode={this.state.mode}
@@ -429,9 +477,10 @@ class App extends Component {
                                 endDate={this.state.endDate}/>
                     <TabCollection ready={this.state.ready} 
                                    items={this.state.items} 
-                                   data={this.state.data} 
+                                   caipyData={this.state.caipyData}
+                                   epgData={this.state.epgData}
                                    actionType={this.state.actionType}
-                                   itemType={this.itemType}/>
+                                   options={this.options}/>
                     <ProgressView value={this.state.ready}
                                   message={this.state.message}/>
                     <SettingsView mode={this.state.mode}

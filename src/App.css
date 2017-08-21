@@ -176,20 +176,16 @@ div .modal .modal-footer .btn {
     font-family: Roboto;
 }
 
+/*
 .vis-item.program {
     box-shadow: 5px 5px 20px rgba(128, 128, 128, 0.5);
 }
+*/
 
 .vis-item {
     background-color: #4182F2;
     font-size: 15pt;
     color: black;
-}
-
-.vis-point.caipy.vis-selected {
-    border-color: white;
-    border-width: 2px;
-    background-color: white;
 }
 
 .vis-item.vis-selected {
@@ -209,7 +205,13 @@ div .modal .modal-footer .btn {
 
 .vis-item.caipy {
     color: white;
-    border-color: #DE463D;
+    background-color: #DE463D;
+    border-color: #EF9A9A;
+}
+
+.vis-item.caipy.vis-selected {
+    border-color: white;
+    border-width: 2px;
 }
 
 .vis-item.program {
