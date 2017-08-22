@@ -24,6 +24,7 @@ export class FilterView extends Component {
     constructor() {
         super();
         this.setFilterSettings = this.setFilterSettings.bind(this);
+        this.handlePresetChange = this.handlePresetChange.bind(this);
     }
 
     handleStartDateChange(e, value) {
@@ -33,6 +34,12 @@ export class FilterView extends Component {
             startDate: this.startDate,
             endDate: this.endDate
         })
+    }
+
+    handlePresetChange(e, value) {
+        if (typeof this.props.onPresetChange === 'function') {
+            this.props.onPresetChange(value);
+        }
     }
 
     handleEndDateChange(e, value) {
@@ -109,9 +116,18 @@ export class FilterView extends Component {
                                 formatSubmit: 'dd/mm/yyyy'
                             }
                            } />
-                    <div className="filter-btn">
-                        <Button className="blue darken-1" waves='light' onClick={() => this.setFilterSettings()}><Icon>filter_list</Icon></Button>   
-                    </div>
+                        <div className="col">
+                            <Button className="blue darken-1 filter-btn" waves='light' onClick={() => this.setFilterSettings()}><Icon>filter_list</Icon></Button>   
+                        </div>
+                        <Input className="presets" onChange={(e,value)=>this.handlePresetChange(e,value)} s={2} type='select' label="Presets" value={this.props.preset}>
+                            {
+                                this.props.presets.map(function(value, index){
+                                    return (
+                                        <option key={value} value={value}>{value}</option>  
+                                   );
+                                },this)
+                            }
+                        </Input>
                 </Row>
     }
 }

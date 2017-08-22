@@ -245,6 +245,20 @@ class App extends Component {
     };
 
     /**
+     * list of presets value extracted from Caipy API.
+     * 
+     * @type {Array}
+     */
+    presets = [];
+
+    /**
+     * preset default value
+     * 
+     * @type {String}
+     */
+    preset = 'default';
+
+    /**
      * mode can be "demo" or "live"
      * @type {String}
      */
@@ -272,8 +286,30 @@ class App extends Component {
         this.setUrlSettings = this.setUrlSettings.bind(this);
         this.setMode = this.setMode.bind(this);
         this.setFilterSettings = this.setFilterSettings.bind(this);
+        this.setPreset = this.setPreset.bind(this);
+        this.initMode();
+        this.preset = Storage.getPreset();
+        if (this.mode === "live") {
+            var that = this;
+            ApiUtils.getPresets(Storage.getApiUrl(), function(err, res) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                that.presets = res;
+            });
+        }
     }
 
+    initMode() {
+        if (Storage.checkMode() !== null &&
+            Storage.checkMode() === "live" &&
+            Storage.checkApiUrl()) {
+            this.mode = "live";
+        } else {
+            Storage.setMode("demo");
+        }
+    }
     /**
      * Initialize options for timeline
      */
@@ -299,13 +335,6 @@ class App extends Component {
      * On mount check the mode ("live" or "demo") and refresh the data according to this
      */
     componentDidMount() {
-        if (Storage.checkMode() !== null &&
-            Storage.checkMode() === "live" &&
-            Storage.checkApiUrl()) {
-            this.mode = "live";
-        } else {
-            Storage.setMode("demo");
-        }
         this.refresh("create");
     }
 
@@ -386,7 +415,7 @@ class App extends Component {
                     console.log(err);
                     return that.showError();
                 }
-                ApiUtils.getCaipyData(Storage.getApiUrl(), startDate, stopDate, "default", programRes, function(err, caipyRes, caipyData) {
+                ApiUtils.getCaipyData(Storage.getApiUrl(), startDate, stopDate, that.preset, programRes, function(err, caipyRes, caipyData) {
                     if (err) {
                         console.log(err);
                         return that.showError();
@@ -435,6 +464,17 @@ class App extends Component {
         Storage.setDate(startDate, endDate);
         this.date.startDate = startDate;
         this.date.endDate = endDate;
+        this.refresh("update");
+    }
+
+    /**
+     * Set preset value
+     * 
+     * @param {String} preset Preset value from dropdown list
+     */
+    setPreset(preset){
+        this.preset = preset;
+        Storage.setPreset(preset);
         this.refresh("update");
     }
 
@@ -502,9 +542,12 @@ class App extends Component {
                                onStackToggle={this.stackToggle}
                                onUrlSettings={this.urlSettings} />
                     <FilterView onSetFilterSettings={this.setFilterSettings}
+                                onPresetChange={this.setPreset}
                                 mode={this.state.mode}
                                 startDate={this.date.startDate}
-                                endDate={this.date.endDate}/>
+                                endDate={this.date.endDate}
+                                presets={this.presets}
+                                preset={this.preset}/>
                     <TabCollection ready={this.state.ready} 
                                    items={this.state.items} 
                                    caipyData={this.state.caipyData}

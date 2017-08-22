@@ -328,3 +328,24 @@ export function buildChannelMap(startDate, stopDate, channels) {
     });
     return channelList;
 }
+
+/**
+ * Get list of presets available.
+ * 
+ * @param  {Function} cb Callback
+ */
+export function getPresets(url, cb) {
+    fetch(url + "/presets")
+        .then(function(response) {
+            if (response.status >= 400) {
+                throw new Error("Bad response from server");
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            cb(null, data);
+        })
+        .catch(function(err) {
+            cb(err, null);
+        });
+}

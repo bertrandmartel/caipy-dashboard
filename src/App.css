@@ -1,5 +1,14 @@
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 
+.dropdown-content li>span {
+    color: #1e88e5
+}
+
+.filter-btn {
+    padding: 0px 2rem 0px 2rem;
+    margin: 1rem 1rem 0px 1rem;
+}
+
 .picker__date-display,
 .picker__weekday-display,
 .picker__day--selected,
@@ -137,10 +146,6 @@ div .modal .modal-footer .btn {
     display: none;
 }
 
-.filter-btn button {
-    margin: 20px;
-}
-
 .filter-row {
     margin-top: 10px;
     padding-left: 25px;
@@ -175,6 +180,8 @@ div .modal .modal-footer .btn {
     background: #FFFFFF;
     font-family: Roboto;
 }
+
+
 
 /*
 .vis-item.program {

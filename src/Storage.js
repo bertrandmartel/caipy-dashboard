@@ -61,3 +61,17 @@ export function setType(type) {
 export function setStack(stack) {
     localStorage.setItem("stack", stack);
 }
+
+export function setPreset(preset) {
+    localStorage.setItem("preset", preset);
+}
+
+export function getPreset() {
+    var preset = localStorage.getItem("preset");
+    if (preset === null) {
+        setPreset("default");
+        return "default";
+    } else {
+        return preset;
+    }
+}
