@@ -110,7 +110,7 @@ export class Timeline extends Component {
         var diff = maxDate.getTime() - minDate.getTime();
 
         var windowStart = new Date(minDate.getTime() + diff / 2);
-        var windowEnd = new Date(windowStart.getTime() + 1 * 60 * 60 * 1000);
+        var windowEnd = new Date(windowStart.getTime() + 2 * 60 * 60 * 1000);
 
         return {
             start: windowStart,

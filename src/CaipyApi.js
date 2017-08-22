@@ -1,6 +1,8 @@
 import moment from 'moment';
 import vis from 'vis';
 
+require("moment-duration-format");
+
 /**
  * Initialize Timeline groups
  * 
@@ -67,14 +69,24 @@ export function getPrograms(url, startDate, stopDate, cb) {
 
                         //populate events
                         for (j = 0; j < data.events.length; j++) {
+
+                            var dateStart = new Date(data.events[j].start);
+                            var dateEnd = new Date(data.events[j].end);
+
+                            var duration = moment.duration(dateEnd.getTime() - dateStart.getTime()).format('hh[h]mm[m]ss[s]');
+
+                            var tooltip = 'title : ' + data.events[j].title + '<br/>' +
+                                'time  : ' + moment(data.events[j].start).format("HH:mm") + '-' + moment(data.events[j].end).format("HH:mm") + '<br/>' +
+                                'duration  :' + duration;
+
                             epgItems.push({
                                 id: data.events[j].event_id,
                                 group: 0,
-                                start: new Date(data.events[j].start),
-                                end: new Date(data.events[j].end),
+                                start: dateStart,
+                                end: dateEnd,
                                 content: data.events[j].title,
                                 className: "program",
-                                title: data.events[j].title + " : " + moment(data.events[j].start).format("HH:mm") + "-" + moment(data.events[j].end).format("HH:mm")
+                                title: tooltip
                             });
                         }
                         channelList[data.tvin_name] = {};
@@ -120,6 +132,12 @@ export function getDemoProgram(channels) {
             var start = channels[i].events[j].start;
             var end = channels[i].events[j].end;
 
+            var duration = moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('hh[h]mm[m]ss[s]');
+
+            var tooltip = 'title : ' + channels[i].events[j].title + '<br/>' +
+                'time  : ' + moment(start).format("HH:mm") + '-' + moment(end).format("HH:mm") + '<br/>' +
+                'duration  :' + duration;
+
             epgItems.push({
                 id: channels[i].events[j].event_id,
                 group: 0,
@@ -127,7 +145,7 @@ export function getDemoProgram(channels) {
                 end: new Date(end),
                 content: channels[i].events[j].title,
                 className: "program",
-                title: channels[i].events[j].title + " : " + moment(start).format("HH:mm") + "-" + moment(end).format("HH:mm")
+                title: tooltip
             });
         }
         channelList[channels[i].tvin_name] = {};
@@ -188,6 +206,12 @@ export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) 
                 var dateStart = new Date(data.markers[j].time);
                 var dateEnd = new Date((new Date(data.markers[j].time).getTime()) + data.markers[j].duration * 1000);
 
+                var duration = moment.duration(data.markers[j].duration * 1000).format('hh[h]mm[m]ss[s]');
+
+                var tooltip = 'title : ' + data.markers[j].clip + '<br/>' +
+                    'time  : ' + moment(dateStart).format("HH:mm") + '-' + moment(dateEnd).format("HH:mm") + '<br/>' +
+                    'duration  :' + data.markers[j].duration + 's (' + duration + ')';
+
                 channelList[data.markers[j].channel].caipy.push({
                     id: data.markers[j].clip + data.markers[j].time,
                     group: 1,
@@ -195,7 +219,7 @@ export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) 
                     end: dateEnd,
                     content: data.markers[j].clip,
                     className: "caipy",
-                    title: data.markers[j].clip + " : " + moment(dateStart).format("HH:mm") + "-" + moment(dateEnd).format("HH:mm")
+                    title: tooltip
                 });
             }
             caipyData.sort(function(a, b) {
@@ -242,6 +266,12 @@ export function getDemoEvents(data, channelList) {
         var dateStart = new Date(data.markers[j].time);
         var dateEnd = new Date((new Date(data.markers[j].time).getTime()) + data.markers[j].duration * 1000);
 
+        var duration = moment.duration(data.markers[j].duration * 1000).format('hh[h]mm[m]ss[s]');
+
+        var tooltip = 'title : ' + data.markers[j].clip + '<br/>' +
+            'time  : ' + moment(dateStart).format("HH:mm") + '-' + moment(dateEnd).format("HH:mm") + '<br/>' +
+            'duration  :' + data.markers[j].duration + 's (' + duration + ')';
+
         channelList[data.markers[j].channel].caipy.push({
             id: data.markers[j].clip + data.markers[j].time,
             group: 1,
@@ -249,7 +279,7 @@ export function getDemoEvents(data, channelList) {
             end: dateEnd,
             content: data.markers[j].clip,
             className: "caipy",
-            title: data.markers[j].clip + " : " + moment(dateStart).format("HH:mm") + "-" + moment(dateEnd).format("HH:mm")
+            title: tooltip
         });
     }
     caipyData.sort(function(a, b) {
