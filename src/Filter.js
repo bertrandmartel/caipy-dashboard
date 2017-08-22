@@ -57,7 +57,6 @@ export class FilterView extends Component {
         if (!this.endDateChanged) {
             this.endDate = this.props.endDate;
         }
-        console.log(this.startDate);
 
         return <Row className={this.props.mode === "demo" ? 'filter-row hidden': 'filter-row'}>
                     <input className='hidden' id='startDate' type='hidden' value={this.startDate} />

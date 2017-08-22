@@ -126,6 +126,30 @@ class TopNavbar extends Component {
  */
 class TabCollection extends Component {
 
+    state = {
+        updatePageDate: null,
+        updateChannel: null
+    };
+
+    caipyDataSet = {};
+    epgDataSet = {};
+
+    constructor(props) {
+        super(props);
+        this.updatePage = this.updatePage.bind(this);
+    }
+
+    /**
+     * Update selected page according to start date of selected item
+     * 
+     * @param  {Date} date start date of selected item
+     * @param  {String} channel channel tab to update
+     */
+    updatePage(date, channel) {
+        this.caipyDataSet[channel].updatePage(date);
+        this.epgDataSet[channel].updatePage(date);
+    }
+
     render() {
         return <div className='tab-main'>
                     <Tabs>
@@ -137,7 +161,9 @@ class TabCollection extends Component {
                                                 return (
                                                         <CollectionItem className="coll-item" key={value.channelName + "-coll"}>
                                                             <Timeline key={value.channelName}
+                                                                      channel={value.channelName}
                                                                       data={value}
+                                                                      onUpdatePage={this.updatePage}
                                                                       options={this.props.options}
                                                                       actionType={this.props.actionType}
                                                                       />
@@ -158,7 +184,9 @@ class TabCollection extends Component {
                                                                  name={value.name}
                                                                  rows={value.rows}
                                                                  length={value.rows.length}
-                                                                 perPage={15}/>
+                                                                 perPage={15}
+                                                                 ref={instance => { this.caipyDataSet[value.name] = instance; }}
+                                                                 />
                                                );
                                             },this)
                                         }
@@ -175,7 +203,9 @@ class TabCollection extends Component {
                                                                  name={value.name}
                                                                  rows={value.rows}
                                                                  length={value.rows.length}
-                                                                 perPage={15}/>
+                                                                 perPage={15}
+                                                                 ref={instance => { this.epgDataSet[value.name] = instance; }}
+                                                                 />
                                                );
                                             },this)
                                         }
@@ -242,7 +272,6 @@ class App extends Component {
         this.setUrlSettings = this.setUrlSettings.bind(this);
         this.setMode = this.setMode.bind(this);
         this.setFilterSettings = this.setFilterSettings.bind(this);
-        console.log("in construct : " + this.date.startDate);
     }
 
     /**

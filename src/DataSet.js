@@ -2,10 +2,11 @@ import React, { Component } from 'react';
 
 import { Pagination, Table, CollectionItem } from 'react-materialize';
 
-/**
- * Caipy Data Set table 
- */
-export class CaipyDataSetItem extends Component {
+import moment from 'moment';
+
+class DataSet extends Component {
+
+    data = [];
 
     /**
      * state change depending on pageIndex value
@@ -26,7 +27,60 @@ export class CaipyDataSetItem extends Component {
         });
     }
 
+    /**
+     * Update selected page according to start date of selected item
+     * 
+     * @param  {Date} date start date of selected item
+     * @param  {String} channel channel tab to update
+     */
+    updatePage(date) {
+
+        var millis = date.getTime();
+        var set = false;
+        var currentDiff = false;
+        var current = "";
+        var dateField = this.getDateField();
+
+        for (var i = 0; i < this.data.length; i++) {
+            if (!set) {
+                set = true;
+                current = new Date(this.data[i][dateField]).getTime();
+                currentDiff = (millis < current);
+                if (current === millis) {
+                    this.setPageForIndex(i);
+                    break;
+                }
+            } else {
+                current = new Date(this.data[i][dateField]).getTime();
+                if ((millis < current) !== currentDiff) {
+                    this.setPageForIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    setPageForIndex(index) {
+        var res = Math.round(index / this.props.perPage);
+        if (res === 0) {
+            res = 1;
+        }
+        this.onSelect(res);
+    }
+}
+
+/**
+ * Caipy Data Set table 
+ */
+export class CaipyDataSetItem extends DataSet {
+
+    getDateField() {
+        return "time";
+    }
+
     render() {
+        this.data = this.props.rows;
+
         var dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
 
         return <CollectionItem className="coll-item" key={this.props.name + "-coll"}>
@@ -51,7 +105,7 @@ export class CaipyDataSetItem extends Component {
                             dataRow.map(function(item, index){
                                 return (
                                     <tr key={this.props.name+":"+item.time}>
-                                        <td>{item.time}</td>
+                                        <td>{moment(item.time).local().toString()}</td>
                                         <td>{item.clip}</td>
                                         <td>{item.duration}</td>
                                     </tr>
@@ -67,28 +121,15 @@ export class CaipyDataSetItem extends Component {
 /**
  * Date Set table 
  */
-export class EpgDataSetItem extends Component {
+export class EpgDataSetItem extends DataSet {
 
-    /**
-     * state change depending on pageIndex value
-     * @type {Object}
-     */
-    state = {
-        pageIndex: 1,
-    };
-
-    constructor() {
-        super();
-        this.onSelect = this.onSelect.bind(this);
-    }
-
-    onSelect(index) {
-        this.setState({
-            pageIndex: index
-        });
+    getDateField() {
+        return "start";
     }
 
     render() {
+        this.data = this.props.rows;
+
         var dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
 
         return <CollectionItem className="coll-item" key={this.props.name + "-coll"}>
@@ -116,8 +157,8 @@ export class EpgDataSetItem extends Component {
                                     <tr key={this.props.name+":"+item.event_id}>
                                         <td>{item.event_id}</td>
                                         <td>{item.title}</td>
-                                        <td>{item.start}</td>
-                                        <td>{item.end}</td>
+                                        <td>{moment(item.start).local().toString()}</td>
+                                        <td>{moment(item.end).local().toString()}</td>
                                     </tr>
                                 );
                             },this)

@@ -22,7 +22,7 @@ export class Timeline extends Component {
     constructor(props) {
         super(props);
         this.updateData = this.updateData.bind(this);
-        this.onTimelineClick = this.onTimelineClick.bind(this);
+        this.onSelect = this.onSelect.bind(this);
     }
 
     componentDidMount() {
@@ -73,14 +73,6 @@ export class Timeline extends Component {
         }
     }
 
-    updateTimelineItems(items) {
-        this.timeline.setItems(items);
-    }
-
-    onTimelineClick(e) {
-        //var props = this.timeline.getEventProperties(e);
-    }
-
     /**
      * Manage action to perform based on actionType props
      * 
@@ -127,6 +119,19 @@ export class Timeline extends Component {
     }
 
     /**
+     * Called when an item is select in the timeline
+     * 
+     * @param  {[type]} properties item properies
+     */
+    onSelect(properties) {
+        if (this.timeline.itemSet.items[properties.items[0]]) {
+            if (typeof this.props.onUpdatePage === 'function') {
+                this.props.onUpdatePage(this.timeline.itemSet.items[properties.items[0]].data.start, this.props.channel);
+            }
+        }
+    }
+
+    /**
      * Create or update timeline
      * 
      * @param  {Object}  config properties
@@ -144,6 +149,7 @@ export class Timeline extends Component {
 
         if (create) {
             this.timeline = new vis.Timeline(container, null, options);
+            this.timeline.on('select', this.onSelect);
         } else {
             this.timeline.setOptions(options);
         }
@@ -154,7 +160,7 @@ export class Timeline extends Component {
     render() {
         return <div className="timeline-tools">
                     <h5 key={this.props.data.channelName + "-title"} className="title">{this.props.data.channelName} </h5>
-                    <div onClick={(e) => this.onTimelineClick(e)} className="timeline-object" id={this.props.data.channelName}></div>
+                    <div className="timeline-object" id={this.props.data.channelName}></div>
                 </div>;
     }
 }
