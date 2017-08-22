@@ -312,7 +312,14 @@ class App extends Component {
         this.excludeProgram = this.excludeProgram.bind(this);
         this.excludeProgramStateChange = this.excludeProgramStateChange.bind(this);
         this.initMode();
-        this.preset = Storage.getPreset();
+        this.initPreset();
+    }
+
+    /**
+     * Inititialize presets
+     */
+    initPreset(){
+      this.preset = Storage.getPreset();
         if (this.mode === "live") {
             var that = this;
             ApiUtils.getPresets(Storage.getApiUrl(), function(err, res) {
@@ -489,6 +496,7 @@ class App extends Component {
         Storage.setApiUrl(url);
         Storage.setMode("live");
         this.mode = "live";
+        this.initPreset();
         this.refresh("update");
     }
 
