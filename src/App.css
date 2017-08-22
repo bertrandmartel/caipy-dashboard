@@ -1,5 +1,13 @@
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 
+.collection .collection-item {
+    padding-bottom: 5px;
+}
+
+.row:after {
+    content: normal;
+}
+
 .dropdown-content li>span {
     color: #1e88e5
 }
@@ -180,6 +188,7 @@ div .modal .modal-footer .btn {
     background: #FFFFFF;
     font-family: Roboto;
 }
+
 
 
 
