@@ -4,6 +4,9 @@ import React, { Component } from 'react';
 //react components
 import { Modal, Button, Input, Row } from 'react-materialize';
 
+//import constant values
+import * as Constant from './Constant.js';
+
 // jquery
 import $ from 'jquery';
 window.$ = window.jQuery = require('jquery');
@@ -213,6 +216,217 @@ export class ProgramSettingsView extends Component {
                         <Input ref="excludeDuration" id="excludeDuration" placeholder="Enter a duration in seconds" s={3} defaultValue={this.props.cutProgramDuration} onKeyPress={(e) => this.handleKeyPress(e)}/>
                         <Input ref="excludeState" id='cutState' onChange={(e,value)=>this.handleExcludeStateChange(e,value)} name='on' s={6} type='switch' value='0'/>
                     </Row>
+                    <Row className="error-message form-error">
+                        <p>{this.state.message}</p>
+                    </Row>
+                </Modal>
+    }
+}
+
+/**
+ * Open Global settings view
+ */
+export class GlobalSettingsView extends Component {
+
+    /**
+     * State holding the error message
+     * @type {Object}
+     */
+    state = {
+        message: "",
+        zoomCheck: false,
+        windowCheck: false,
+        zoomAutoFocus: false,
+        windowAutoFocus: false
+    }
+
+    overrideZoomWindowSize = -1;
+    overrideInitWindowSize = -1;
+
+    tempSettings = {
+        zoomWindowSize: 0,
+        initWindowSize: 0
+    };
+
+    constructor() {
+        super();
+        this.validateSettings = this.validateSettings.bind(this);
+    }
+
+    close() {
+        this.setState({
+            message: ""
+        });
+        $('#global-settings').modal('close');
+    }
+
+    /**
+     * Validate the settings input.
+     * 
+     */
+    validateSettings() {
+        if (isValidPositiveNumber(this.refs.zoomWindowSize.state.value) &&
+            isValidPositiveNumber(this.refs.initWindowSize.state.value)) {
+
+            if (typeof this.props.onGlobalSettings === 'function') {
+                this.close();
+                this.props.onGlobalSettings(
+                    parseInt(this.refs.zoomWindowSize.state.value, 10),
+                    parseInt(this.refs.initWindowSize.state.value, 10)
+                );
+            }
+        } else {
+            this.setState({
+                message: "you must type a valid number"
+            })
+        }
+    }
+
+    /**
+     * Handle the enter key
+     * 
+     * @param  {Object} e event
+     */
+    handleKeyPress(e) {
+        if (e.key === 'Enter') {
+            this.validateSettings();
+        }
+    }
+
+    /**
+     * Set default value for zoom window
+     * 
+     * @param  {Object} e     event
+     * @param  {[type]} value check value
+     */
+    handleDefaultZoomValue(e, value) {
+        //keep other field intact
+        this.overrideInitWindowSize = this.refs.initWindowSize.state.value;
+
+        if (value === true) {
+            this.tempSettings.zoomWindowSize = this.refs.zoomWindowSize.state.value;
+            this.overrideZoomWindowSize = Constant.defaultZoomWindowSize;
+            this.setState({
+                load: 1,
+                zoomCheck: 'true',
+                zoomAutoFocus: false,
+                windowAutoFocus: false
+            });
+        } else {
+            this.overrideZoomWindowSize = this.tempSettings.zoomWindowSize;
+            this.setState({
+                load: 1,
+                zoomCheck: '',
+                zoomAutoFocus: false,
+                windowAutoFocus: false
+            });
+        }
+    }
+
+    /**
+     * Set default value for init window size
+     * 
+     * @param  {Object} e     event
+     * @param  {[type]} value check value
+     */
+    handleDefaultWindowSizeValue(e, value) {
+        //keep other field intact
+        this.overrideZoomWindowSize = this.refs.zoomWindowSize.state.value;
+
+        if (value === true) {
+            this.tempSettings.initWindowSize = this.refs.initWindowSize.state.value;
+            this.overrideInitWindowSize = Constant.defaultWindowInitSize;
+            this.setState({
+                load: 1,
+                windowCheck: 'true',
+                zoomAutoFocus: false,
+                windowAutoFocus: false
+            });
+        } else {
+            this.overrideInitWindowSize = this.tempSettings.initWindowSize;
+            this.setState({
+                load: 1,
+                windowCheck: '',
+                zoomAutoFocus: false,
+                windowAutoFocus: false
+            });
+        }
+    }
+
+    /**
+     * Handle input change to clear the default checkbox
+     * 
+     * @param  {Obect} e     event
+     * @param  {[type]} value [description]
+     * @param  {String} name    input name
+     */
+    handleInputChange(e, value, name) {
+
+        switch (name) {
+            case 'zoomCheck':
+                this.overrideZoomWindowSize = value;
+                this.overrideInitWindowSize = this.refs.initWindowSize.state.value;
+                if (this.refs.zoomCheck.state.value === true) {
+                    this.refs.zoomCheck.state.value = 'default';
+                    this.setState({
+                        zoomCheck: '',
+                        zoomAutoFocus: true,
+                        windowCheck: this.state.windowCheck,
+                        windowAutoFocus: false
+                    });
+                }
+                break;
+            case 'windowCheck':
+                this.overrideInitWindowSize = value;
+                this.overrideZoomWindowSize = this.refs.zoomWindowSize.state.value;
+                if (this.refs.windowCheck.state.value === true) {
+                    this.refs.windowCheck.state.value = 'default';
+                    this.setState({
+                        zoomCheck: this.state.zoomCheck,
+                        zoomAutoFocus: false,
+                        windowCheck: '',
+                        windowAutoFocus: true
+                    });
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    focusText(e) {
+        var tmp = e.target.value
+        e.target.value = ''
+        e.target.value = tmp
+    }
+
+    render() {
+        var zoomWindowValue = "" + ((this.overrideZoomWindowSize !== -1) ? this.overrideZoomWindowSize : this.props.settings.zoomWindowSize);
+        var initWindowValue = "" + ((this.overrideInitWindowSize !== -1) ? this.overrideInitWindowSize : this.props.settings.windowInitSize);
+
+        this.overrideZoomWindowSize = -1;
+        this.overrideInitWindowSize = -1;
+
+        return <Modal
+                    id="global-settings"
+                    header='Global Settings'
+                    actions={
+                        <div>
+                            <Button className="blue darken-1" waves='light' onClick={() => this.validateSettings()}>OK</Button>   
+                            <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>
+                        </div>
+                    }
+                    >
+                    <Row>
+                        <Input autoFocus={this.state.zoomAutoFocus} onFocus={this.focusText} key={'zoomWindowSize' + zoomWindowValue + this.tempSettings.zoomWindowSize} label="zoom window size (in seconds)" ref="zoomWindowSize" onChange={(e,value)=>this.handleInputChange(e,value,'zoomCheck')} placeholder="Enter a value in seconds" s={6} defaultValue={zoomWindowValue} onKeyPress={(e) => this.handleKeyPress(e)}/>
+                        <Input checked={this.state.zoomCheck} ref="zoomCheck" name='zoomCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultZoomValue(e,value)} s={6}/>
+                    </Row>
+                    <div className="form-modal">
+                        <Row>
+                            <Input autoFocus={this.state.windowAutoFocus} onFocus={this.focusText} key={'initWindowSize' + initWindowValue + this.tempSettings.initWindowSize} label="init window size (in seconds)" ref="initWindowSize" onChange={(e,value)=>this.handleInputChange(e,value,'windowCheck')} placeholder="Enter a value in seconds" s={6} defaultValue={initWindowValue} onKeyPress={(e) => this.handleKeyPress(e)}/>
+                            <Input checked={this.state.windowCheck} ref="windowCheck"  name='windowCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultWindowSizeValue(e,value)} s={6}/>
+                        </Row>
+                    </div>
                     <Row className="error-message form-error">
                         <p>{this.state.message}</p>
                     </Row>

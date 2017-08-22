@@ -11,11 +11,14 @@ import { Chip, Tabs, Tab, Footer, Collection, CollectionItem, Row, Col, Preloade
 import { Timeline } from './Timeline.js';
 import { CaipyDataSetItem, EpgDataSetItem } from './DataSet.js';
 import { FilterView } from './Filter.js';
-import { UrlSettingsView, ProgramSettingsView } from './Settings.js';
+import { UrlSettingsView, ProgramSettingsView, GlobalSettingsView } from './Settings.js';
 
 //utility for Caipy (parse JSON data)
 import * as ApiUtils from './CaipyApi.js';
 import * as Storage from './Storage.js';
+
+//import constant values
+import * as Constant from './Constant.js';
 
 //moment for date parsing
 import moment from 'moment';
@@ -28,18 +31,6 @@ window.$ = window.jQuery = require('jquery');
 
 require('materialize-css/dist/js/materialize.min.js');
 //require('materialize-css/materialize.min.js')
-
-/**
- * Default start date for query in live mode
- * @type {String}
- */
-const defaultStartDate = "02/08/2017";
-
-/**
- * Default end date for query in live mode
- * @type {String}
- */
-const defaultEndDate = "02/08/2017";
 
 /**
  * Footer component
@@ -116,12 +107,23 @@ class TopNavbar extends Component {
         }
     }
 
+    /**
+     * Open Global Settings view
+     * 
+     */
+    globalSettings() {
+        if (typeof this.props.onGlobalSettings === 'function') {
+            this.props.onGlobalSettings();
+        }
+    }
+
     render() {
         return <Navbar href={process.env.PUBLIC_URL} brand='Caipy Dashboard' className="blue darken-1" right>
                     <NavItem onClick={() => this.fit()}><Icon medium>center_focus_strong</Icon></NavItem>
                     <NavItem onClick={() => this.stackToggle()}><Icon medium>clear_all</Icon></NavItem>
                     <NavItem onClick={() => this.removePrograms()}><Icon medium>content_cut</Icon></NavItem>
                     <NavItem onClick={() => this.urlSettings()}><Chip close={false}>{this.props.mode} mode</Chip></NavItem> 
+                    <NavItem onClick={() => this.globalSettings()}><Icon medium>settings</Icon></NavItem>
                     <NavItem onClick={() => this.refresh("update")}><Icon>refresh</Icon></NavItem>
                     <NavItem href="https://github.com/bertrandmartel/caipy-dashboard" target="_blank" ><Icon>code</Icon></NavItem>
                 </Navbar>
@@ -173,6 +175,7 @@ class TabCollection extends Component {
                                                                       onUpdatePage={this.updatePage}
                                                                       options={this.props.options}
                                                                       actionType={this.props.actionType}
+                                                                      settings={this.props.settings}
                                                                       />
                                                         </CollectionItem>             
                                                );
@@ -234,8 +237,8 @@ class App extends Component {
      * @type {Object}
      */
     date = {
-        startDate: defaultStartDate,
-        endDate: defaultEndDate
+        startDate: Constant.defaultStartDate,
+        endDate: Constant.defaultEndDate
     }
 
     state = {
@@ -294,6 +297,16 @@ class App extends Component {
         type: "range"
     };
 
+    /**
+     * Global settings.
+     * 
+     * @type {Object}
+     */
+    settings = {
+        zoomWindowSize: Constant.defaultZoomWindowSize,
+        windowInitSize: Constant.defaultWindowInitSize
+    };
+
     constructor() {
         super();
         this.items = [];
@@ -311,15 +324,22 @@ class App extends Component {
         this.setPreset = this.setPreset.bind(this);
         this.excludeProgram = this.excludeProgram.bind(this);
         this.excludeProgramStateChange = this.excludeProgramStateChange.bind(this);
+        this.updateGlobalSettings = this.updateGlobalSettings.bind(this);
         this.initMode();
         this.initPreset();
+        this.initSettings();
+    }
+
+    initSettings() {
+        this.settings.windowInitSize = Storage.getWindowInitSize();
+        this.settings.zoomWindowSize = Storage.getZoomWindowSize();
     }
 
     /**
      * Inititialize presets
      */
-    initPreset(){
-      this.preset = Storage.getPreset();
+    initPreset() {
+        this.preset = Storage.getPreset();
         if (this.mode === "live") {
             var that = this;
             ApiUtils.getPresets(Storage.getApiUrl(), function(err, res) {
@@ -547,6 +567,30 @@ class App extends Component {
         this.refresh("update");
     }
 
+    updateGlobalSettings(zoomWindowSize, windowInitSize) {
+        this.settings = {
+            zoomWindowSize: zoomWindowSize,
+            windowInitSize: windowInitSize
+        };
+        console.log("set zoom window : " + zoomWindowSize);
+        console.log("set init window : " + windowInitSize);
+        Storage.setWindowInitSize(windowInitSize);
+        Storage.setZoomWindowSize(zoomWindowSize);
+        this.setState({
+            actionType: "options",
+            ready: true,
+            caipyData: this.caipyData,
+            epgData: this.epgData,
+            items: this.items,
+            mode: this.mode,
+            options: this.options,
+            url: Storage.getApiUrl(),
+            message: "",
+            startDate: this.date.startDate,
+            endDate: this.date.endDate
+        })
+    }
+
     /**
      * Open URL settings modal
      */
@@ -559,6 +603,13 @@ class App extends Component {
      */
     removeProgram() {
         $('#cut-program-settings').modal('open');
+    }
+
+    /**
+     * Open Global settings modal
+     */
+    globalSettings() {
+        $('#global-settings').modal('open');
     }
 
     /**
@@ -607,7 +658,8 @@ class App extends Component {
                                onRefresh={this.refresh}
                                onStackToggle={this.stackToggle}
                                onUrlSettings={this.urlSettings}
-                               onRemovePrograms={this.removeProgram} />
+                               onRemovePrograms={this.removeProgram}
+                               onGlobalSettings={this.globalSettings} />
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 onPresetChange={this.setPreset}
                                 mode={this.state.mode}
@@ -620,7 +672,8 @@ class App extends Component {
                                    caipyData={this.state.caipyData}
                                    epgData={this.state.epgData}
                                    actionType={this.state.actionType}
-                                   options={this.options}/>
+                                   options={this.options}
+                                   settings={this.settings}/>
                     <ProgressView value={this.state.ready}
                                   message={this.state.message}/>
                     <UrlSettingsView mode={this.state.mode}
@@ -633,6 +686,9 @@ class App extends Component {
                                   onExcludeProgram={this.excludeProgram}
                                   onExcludeStateChange={this.excludeProgramStateChange}
                                   />
+                    <GlobalSettingsView 
+                                  settings={this.settings}
+                                  onGlobalSettings={this.updateGlobalSettings}/>
                 </div>
                 <FooterView/>
              </div>

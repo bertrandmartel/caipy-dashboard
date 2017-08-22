@@ -4,12 +4,6 @@ import moment from 'moment';
 import vis from 'vis';
 
 /**
- * zoom offset value in ms added and substracted to start/stop time of the selected event 
- * @type {Number}
- */
-const zoomHourOffset = 0.5 * 60 * 60 * 1000;
-
-/**
  * The Timeline object used to render a vis.js timeline
  */
 export class Timeline extends Component {
@@ -34,8 +28,8 @@ export class Timeline extends Component {
         if (selection.length > 0) {
             this.timeline.focus(selection);
             this.timeline.setSelection([]);
-            let startDate = moment(this.timeline.itemSet.items[selection[0]].data.start.getTime() - zoomHourOffset).format("YYYY-MM-DD HH:mm:ss");
-            let stopDate = moment(this.timeline.itemSet.items[selection[0]].data.end.getTime() + zoomHourOffset).format("YYYY-MM-DD HH:mm:ss");
+            let startDate = moment(this.timeline.itemSet.items[selection[0]].data.start.getTime() - this.props.settings.zoomWindowSize).format("YYYY-MM-DD HH:mm:ss");
+            let stopDate = moment(this.timeline.itemSet.items[selection[0]].data.end.getTime() + this.props.settings.zoomWindowSize).format("YYYY-MM-DD HH:mm:ss");
             this.timeline.setWindow(startDate, stopDate);
         } else {
             //this.timeline.setWindow(this.date.start, this.date.stop);
@@ -83,7 +77,7 @@ export class Timeline extends Component {
                 this.fit();
                 break;
             case "options":
-                var options = this.getOptions(this.timeline.getWindow(), this.props.options);
+                var options = this.getOptions(this.getWindow(this.props.data.items), this.props.options);
                 this.timeline.setOptions(options);
                 break;
             case "update":
@@ -110,7 +104,7 @@ export class Timeline extends Component {
         var diff = maxDate.getTime() - minDate.getTime();
 
         var windowStart = new Date(minDate.getTime() + diff / 2);
-        var windowEnd = new Date(windowStart.getTime() + 2 * 60 * 60 * 1000);
+        var windowEnd = new Date(windowStart.getTime() + this.props.settings.windowInitSize);
 
         return {
             start: windowStart,

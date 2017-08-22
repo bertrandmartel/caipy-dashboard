@@ -1,3 +1,6 @@
+//import constant values
+import * as Constant from './Constant.js';
+
 export function getApiUrl() {
     return localStorage.getItem("api-url");
 }
@@ -102,4 +105,32 @@ export function getCutProgramState() {
     } else {
         return (state === 'true');
     }
+}
+
+export function getWindowInitSize() {
+    var window = localStorage.getItem("windowInitSize");
+    if (window === null) {
+        setWindowInitSize(Constant.defaultWindowInitSize);
+        return Constant.defaultWindowInitSize;
+    } else {
+        return parseInt(window, 10);
+    }
+}
+
+export function getZoomWindowSize() {
+    var window = localStorage.getItem("zoomWindowSize");
+    if (window === null) {
+        setZoomWindowSize(Constant.defaultZoomWindowSize);
+        return Constant.defaultZoomWindowSize;
+    } else {
+        return parseInt(window, 10);
+    }
+}
+
+export function setWindowInitSize(value) {
+    localStorage.setItem("windowInitSize", value);
+}
+
+export function setZoomWindowSize(value) {
+    localStorage.setItem("zoomWindowSize", value);
 }
