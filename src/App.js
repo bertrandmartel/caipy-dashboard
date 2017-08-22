@@ -119,7 +119,7 @@ class TopNavbar extends Component {
 
     render() {
         return <Navbar href={process.env.PUBLIC_URL} brand='Caipy Dashboard' className="blue darken-1" right>
-                    <NavItem onClick={() => this.fit()}><Icon medium>center_focus_strong</Icon></NavItem>
+                    <NavItem onClick={() => this.fit()}><Icon medium>zoom_in</Icon></NavItem>
                     <NavItem onClick={() => this.stackToggle()}><Icon medium>clear_all</Icon></NavItem>
                     <NavItem onClick={() => this.removePrograms()}><Icon medium>content_cut</Icon></NavItem>
                     <NavItem onClick={() => this.urlSettings()}><Chip close={false}>{this.props.mode} mode</Chip></NavItem> 
