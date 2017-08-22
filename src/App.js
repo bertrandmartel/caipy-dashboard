@@ -33,13 +33,13 @@ require('materialize-css/dist/js/materialize.min.js');
  * Default start date for query in live mode
  * @type {String}
  */
-const defaultStartDate = "08/02/2017";
+const defaultStartDate = "02/08/2017";
 
 /**
  * Default end date for query in live mode
  * @type {String}
  */
-const defaultEndDate = "08/02/2017";
+const defaultEndDate = "02/08/2017";
 
 /**
  * Footer component
@@ -242,6 +242,7 @@ class App extends Component {
         this.setUrlSettings = this.setUrlSettings.bind(this);
         this.setMode = this.setMode.bind(this);
         this.setFilterSettings = this.setFilterSettings.bind(this);
+        console.log("in construct : " + this.date.startDate);
     }
 
     /**
@@ -347,8 +348,8 @@ class App extends Component {
 
         if (this.mode === "live") {
 
-            var startDate = moment(this.date.startDate, "MM/DD/YYYY").format("YYYYMMDDHHmmSS");
-            var stopDate = moment(this.date.endDate, "MM/DD/YYYY").format("YYYYMMDDHHmmSS");
+            var startDate = moment(this.date.startDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
+            var stopDate = moment(this.date.endDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
 
             //get channel list
             ApiUtils.getPrograms(Storage.getApiUrl(), startDate, stopDate, function(err, programRes, epgData) {
@@ -473,8 +474,8 @@ class App extends Component {
                                onUrlSettings={this.urlSettings} />
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 mode={this.state.mode}
-                                startDate={this.state.startDate}
-                                endDate={this.state.endDate}/>
+                                startDate={this.date.startDate}
+                                endDate={this.date.endDate}/>
                     <TabCollection ready={this.state.ready} 
                                    items={this.state.items} 
                                    caipyData={this.state.caipyData}

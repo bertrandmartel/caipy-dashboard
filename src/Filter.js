@@ -4,6 +4,9 @@ import React, { Component } from 'react';
 //react components
 import { Row, Input, Button, Icon } from 'react-materialize';
 
+// moment
+import moment from 'moment';
+
 // jquery
 import $ from 'jquery';
 window.$ = window.jQuery = require('jquery');
@@ -54,8 +57,11 @@ export class FilterView extends Component {
         if (!this.endDateChanged) {
             this.endDate = this.props.endDate;
         }
+        console.log(this.startDate);
 
         return <Row className={this.props.mode === "demo" ? 'filter-row hidden': 'filter-row'}>
+                    <input className='hidden' id='startDate' type='hidden' value={this.startDate} />
+                    <input className='hidden' id='endDate' type='hidden' value={this.endDate} />
                     <Input className='datepicker'
                            ref="startDate" 
                            type="date"  
@@ -63,17 +69,21 @@ export class FilterView extends Component {
                            value={this.startDate}
                            onChange={(e,value)=>this.handleStartDateChange(e,value)}
                            options={
-                            {
+                            {   
                                 onSet: function( arg ){
                                     if ( 'select' in arg ){ //prevent closing on selecting month/year
                                         this.close();
                                     }
                                 },
+                                onStart: function() {
+                                    this.set('select', moment($('#startDate').val(),'DD/MM/YYYY').toDate());
+                                },
                                 onClose: function() {
                                     $(document.activeElement).blur();
                                 },
-                                format: 'mm/dd/yyyy',
-                                formatSubmit: 'mm/dd/yyyy'
+                                selectMonths: true,
+                                format: 'dd/mm/yyyy',
+                                formatSubmit: 'dd/mm/yyyy'
                             }
                            } />
                     <Input className='datepicker' 
@@ -89,11 +99,15 @@ export class FilterView extends Component {
                                         this.close();
                                     }
                                 },
+                                onStart: function() {
+                                    this.set('select', moment($('#endDate').val(),'DD/MM/YYYY').toDate());
+                                },
                                 onClose: function() {
                                     $(document.activeElement).blur();
                                 },
-                                format: 'mm/dd/yyyy',
-                                formatSubmit: 'mm/dd/yyyy'
+                                selectMonths: true,
+                                format: 'dd/mm/yyyy',
+                                formatSubmit: 'dd/mm/yyyy'
                             }
                            } />
                     <div className="filter-btn">
