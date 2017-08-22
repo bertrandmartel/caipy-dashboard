@@ -572,12 +572,10 @@ class App extends Component {
             zoomWindowSize: zoomWindowSize,
             windowInitSize: windowInitSize
         };
-        console.log("set zoom window : " + zoomWindowSize);
-        console.log("set init window : " + windowInitSize);
         Storage.setWindowInitSize(windowInitSize);
         Storage.setZoomWindowSize(zoomWindowSize);
         this.setState({
-            actionType: "options",
+            actionType: "options-global",
             ready: true,
             caipyData: this.caipyData,
             epgData: this.epgData,
@@ -635,7 +633,7 @@ class App extends Component {
         this.options.stack = !this.options.stack;
         Storage.setStack(this.options.stack);
         this.setState({
-            actionType: "options",
+            actionType: "options-timeline",
             ready: true,
             caipyData: this.caipyData,
             epgData: this.epgData,

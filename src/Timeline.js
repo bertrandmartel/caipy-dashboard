@@ -76,8 +76,12 @@ export class Timeline extends Component {
             case "fit":
                 this.fit();
                 break;
-            case "options":
-                var options = this.getOptions(this.getWindow(this.props.data.items), this.props.options);
+            case "options-timeline":
+                var options = this.getOptions(this.timeline.getWindow(), this.props.options);
+                this.timeline.setOptions(options);
+                break;
+            case "options-global":
+                options = this.getOptions(this.getWindow(this.props.data.items), this.props.options);
                 this.timeline.setOptions(options);
                 break;
             case "update":
