@@ -144,6 +144,8 @@ export class Timeline extends Component {
 
         if (create) {
             this.timeline = new vis.Timeline(container, null, options);
+        } else {
+            this.timeline.setOptions(options);
         }
         this.timeline.setGroups(config.data.groups);
         this.timeline.setItems(config.data.items);
