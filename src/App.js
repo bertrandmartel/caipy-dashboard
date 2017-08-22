@@ -11,7 +11,7 @@ import { Chip, Tabs, Tab, Footer, Collection, CollectionItem, Row, Col, Preloade
 import { Timeline } from './Timeline.js';
 import { CaipyDataSetItem, EpgDataSetItem } from './DataSet.js';
 import { FilterView } from './Filter.js';
-import { SettingsView } from './Settings.js';
+import { UrlSettingsView, ProgramSettingsView } from './Settings.js';
 
 //utility for Caipy (parse JSON data)
 import * as ApiUtils from './CaipyApi.js';
@@ -91,6 +91,12 @@ class TopNavbar extends Component {
         }
     }
 
+    removePrograms() {
+        if (typeof this.props.onRemovePrograms === 'function') {
+            this.props.onRemovePrograms();
+        }
+    }
+
     /**
      * refresh data (in dataset & in timeline)
      * @param  {String} type refresh type ("create" or "update")
@@ -113,9 +119,10 @@ class TopNavbar extends Component {
     render() {
         return <Navbar href={process.env.PUBLIC_URL} brand='Caipy Dashboard' className="blue darken-1" right>
                     <NavItem onClick={() => this.fit()}><Icon medium>center_focus_strong</Icon></NavItem>
-                     <NavItem onClick={() => this.stackToggle()}><Icon medium>clear_all</Icon></NavItem>
-                    <NavItem onClick={() => this.refresh("update")}><Icon>refresh</Icon></NavItem>
+                    <NavItem onClick={() => this.stackToggle()}><Icon medium>clear_all</Icon></NavItem>
+                    <NavItem onClick={() => this.removePrograms()}><Icon medium>content_cut</Icon></NavItem>
                     <NavItem onClick={() => this.urlSettings()}><Chip close={false}>{this.props.mode} mode</Chip></NavItem> 
+                    <NavItem onClick={() => this.refresh("update")}><Icon>refresh</Icon></NavItem>
                     <NavItem href="https://github.com/bertrandmartel/caipy-dashboard" target="_blank" ><Icon>code</Icon></NavItem>
                 </Navbar>
     }
@@ -265,6 +272,20 @@ class App extends Component {
     mode = "demo";
 
     /**
+     * Program duration that should be excluded if duration is less than this value.
+     * 
+     * @type {Number}
+     */
+    cutProgramDuration = 0;
+
+    /**
+     * Exclude program duration state (enable/disable).
+     * 
+     * @type {Boolean}
+     */
+    cutProgramState = false;
+
+    /**
      * default timeline item type (false for "range" / true for "point")
      * @type {Boolean}
      */
@@ -280,6 +301,7 @@ class App extends Component {
         this.epgData = [];
         this.checkDate();
         this.checkOptions();
+        this.checkCutProgram();
         this.fit = this.fit.bind(this);
         this.stackToggle = this.stackToggle.bind(this);
         this.refresh = this.refresh.bind(this);
@@ -287,6 +309,8 @@ class App extends Component {
         this.setMode = this.setMode.bind(this);
         this.setFilterSettings = this.setFilterSettings.bind(this);
         this.setPreset = this.setPreset.bind(this);
+        this.excludeProgram = this.excludeProgram.bind(this);
+        this.excludeProgramStateChange = this.excludeProgramStateChange.bind(this);
         this.initMode();
         this.preset = Storage.getPreset();
         if (this.mode === "live") {
@@ -301,6 +325,10 @@ class App extends Component {
         }
     }
 
+    /**
+     * Initialize working mode (live or demo)
+     * 
+     */
     initMode() {
         if (Storage.checkMode() !== null &&
             Storage.checkMode() === "live" &&
@@ -310,12 +338,21 @@ class App extends Component {
             Storage.setMode("demo");
         }
     }
+
     /**
      * Initialize options for timeline
      */
     checkOptions() {
         this.options.stack = Storage.getStack();
         this.options.type = Storage.getType();
+    }
+
+    /**
+     * Initialize options for timeline
+     */
+    checkCutProgram() {
+        this.cutProgramDuration = Storage.getCutProgramDuration();
+        this.cutProgramState = Storage.getCutProgramState();
     }
 
     /**
@@ -410,7 +447,7 @@ class App extends Component {
             var stopDate = moment(this.date.endDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
 
             //get channel list
-            ApiUtils.getPrograms(Storage.getApiUrl(), startDate, stopDate, function(err, programRes, epgData) {
+            ApiUtils.getPrograms(Storage.getApiUrl(), startDate, stopDate, this.cutProgramState, this.cutProgramDuration, function(err, programRes, epgData) {
                 if (err) {
                     console.log(err);
                     return that.showError();
@@ -435,7 +472,7 @@ class App extends Component {
                 require('./demo/demo-m6.json')
             ];
 
-            var epgResult = ApiUtils.getDemoProgram(channels);
+            var epgResult = ApiUtils.getDemoProgram(channels, this.cutProgramState, this.cutProgramDuration);
             var caipyResult = ApiUtils.getDemoEvents(data, epgResult.channels);
 
             var items = ApiUtils.buildChannelMap(startDate, stopDate, caipyResult.channels);
@@ -472,7 +509,7 @@ class App extends Component {
      * 
      * @param {String} preset Preset value from dropdown list
      */
-    setPreset(preset){
+    setPreset(preset) {
         this.preset = preset;
         Storage.setPreset(preset);
         this.refresh("update");
@@ -488,11 +525,32 @@ class App extends Component {
         this.refresh("update");
     }
 
+    excludeProgram(cutProgramDuration) {
+        this.cutProgramDuration = cutProgramDuration;
+        this.cutProgramState = true;
+        Storage.setCutProgramDuration(this.cutProgramDuration);
+        Storage.setCutProgramState(this.cutProgramState);
+        this.refresh("update");
+    }
+
+    excludeProgramStateChange() {
+        this.cutProgramState = false;
+        Storage.setCutProgramState(false);
+        this.refresh("update");
+    }
+
     /**
      * Open URL settings modal
      */
     urlSettings() {
         $('#url-settings').modal('open');
+    }
+
+    /**
+     * Open URL settings modal
+     */
+    removeProgram() {
+        $('#cut-program-settings').modal('open');
     }
 
     /**
@@ -540,7 +598,8 @@ class App extends Component {
                                onFit={this.fit}
                                onRefresh={this.refresh}
                                onStackToggle={this.stackToggle}
-                               onUrlSettings={this.urlSettings} />
+                               onUrlSettings={this.urlSettings}
+                               onRemovePrograms={this.removeProgram} />
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 onPresetChange={this.setPreset}
                                 mode={this.state.mode}
@@ -556,10 +615,16 @@ class App extends Component {
                                    options={this.options}/>
                     <ProgressView value={this.state.ready}
                                   message={this.state.message}/>
-                    <SettingsView mode={this.state.mode}
+                    <UrlSettingsView mode={this.state.mode}
                                   url={this.state.url}
                                   onSetUrlSettings={this.setUrlSettings}
                                   onSetMode={this.setMode}/>
+                    <ProgramSettingsView
+                                  cutProgramDuration={this.cutProgramDuration}
+                                  cutProgramState={this.cutProgramState}
+                                  onExcludeProgram={this.excludeProgram}
+                                  onExcludeStateChange={this.excludeProgramStateChange}
+                                  />
                 </div>
                 <FooterView/>
              </div>

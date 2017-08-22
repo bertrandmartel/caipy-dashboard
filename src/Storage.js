@@ -75,3 +75,31 @@ export function getPreset() {
         return preset;
     }
 }
+
+export function setCutProgramDuration(value) {
+    localStorage.setItem("cutProgramDuration", value);
+}
+
+export function setCutProgramState(state) {
+    localStorage.setItem("cutProgramState", state);
+}
+
+export function getCutProgramDuration() {
+    var duration = localStorage.getItem("cutProgramDuration");
+    if (duration === null) {
+        setCutProgramDuration(0);
+        return 0;
+    } else {
+        return duration;
+    }
+}
+
+export function getCutProgramState() {
+    var state = localStorage.getItem("cutProgramState");
+    if (state === null) {
+        setCutProgramState(false);
+        return false;
+    } else {
+        return (state === 'true');
+    }
+}

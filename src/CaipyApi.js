@@ -28,7 +28,7 @@ function initGroups() {
  * 
  * @param  {Function} cb(err,res) callback that holds the result return    
  */
-export function getPrograms(url, startDate, stopDate, cb) {
+export function getPrograms(url, startDate, stopDate, cutState, cutDuration, cb) {
 
     var programData = [];
     var channelList = {};
@@ -68,26 +68,32 @@ export function getPrograms(url, startDate, stopDate, cb) {
                         }
 
                         //populate events
-                        for (j = 0; j < data.events.length; j++) {
+                        for (j = data.events.length - 1; j >= 0; j--) {
 
                             var dateStart = new Date(data.events[j].start);
                             var dateEnd = new Date(data.events[j].end);
 
-                            var duration = moment.duration(dateEnd.getTime() - dateStart.getTime()).format('hh[h]mm[m]ss[s]');
+                            var durationDiff = parseInt(moment.duration(dateEnd.getTime() - dateStart.getTime()).format('s'), 10);
 
-                            var tooltip = 'title : ' + data.events[j].title + '<br/>' +
-                                'time  : ' + moment(data.events[j].start).format("HH:mm") + '-' + moment(data.events[j].end).format("HH:mm") + '<br/>' +
-                                'duration  :' + duration;
+                            if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
+                                data.events.splice(j, 1);
+                            } else {
+                                var duration = moment.duration(dateEnd.getTime() - dateStart.getTime()).format('hh[h]mm[m]ss[s]');
 
-                            epgItems.push({
-                                id: data.events[j].event_id,
-                                group: 0,
-                                start: dateStart,
-                                end: dateEnd,
-                                content: data.events[j].title,
-                                className: "program",
-                                title: tooltip
-                            });
+                                var tooltip = 'title : ' + data.events[j].title + '<br/>' +
+                                    'time  : ' + moment(data.events[j].start).format("HH:mm") + '-' + moment(data.events[j].end).format("HH:mm") + '<br/>' +
+                                    'duration  :' + duration;
+
+                                epgItems.push({
+                                    id: data.events[j].event_id,
+                                    group: 0,
+                                    start: dateStart,
+                                    end: dateEnd,
+                                    content: data.events[j].title,
+                                    className: "program",
+                                    title: tooltip
+                                });
+                            }
                         }
                         channelList[data.tvin_name] = {};
                         channelList[data.tvin_name].program = epgItems;
@@ -113,7 +119,7 @@ export function getPrograms(url, startDate, stopDate, cb) {
  * @param  {Array} channels Array of channels
  * @return {Object}          an object that enclose the epg data set + the channel list generated
  */
-export function getDemoProgram(channels) {
+export function getDemoProgram(channels, cutState, cutDuration) {
     var programData = [];
     var channelList = {};
 
@@ -132,21 +138,27 @@ export function getDemoProgram(channels) {
             var start = channels[i].events[j].start;
             var end = channels[i].events[j].end;
 
-            var duration = moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('hh[h]mm[m]ss[s]');
+            var durationDiff = parseInt(moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('s'), 10);
 
-            var tooltip = 'title : ' + channels[i].events[j].title + '<br/>' +
-                'time  : ' + moment(start).format("HH:mm") + '-' + moment(end).format("HH:mm") + '<br/>' +
-                'duration  :' + duration;
+            if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
+                channels[i].events.splice(j, 1);
+            } else {
+                var duration = moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('hh[h]mm[m]ss[s]');
 
-            epgItems.push({
-                id: channels[i].events[j].event_id,
-                group: 0,
-                start: new Date(start),
-                end: new Date(end),
-                content: channels[i].events[j].title,
-                className: "program",
-                title: tooltip
-            });
+                var tooltip = 'title : ' + channels[i].events[j].title + '<br/>' +
+                    'time  : ' + moment(start).format("HH:mm") + '-' + moment(end).format("HH:mm") + '<br/>' +
+                    'duration  :' + duration;
+
+                epgItems.push({
+                    id: channels[i].events[j].event_id,
+                    group: 0,
+                    start: new Date(start),
+                    end: new Date(end),
+                    content: channels[i].events[j].title,
+                    className: "program",
+                    title: tooltip
+                });
+            }
         }
         channelList[channels[i].tvin_name] = {};
         channelList[channels[i].tvin_name].program = epgItems;
@@ -213,7 +225,7 @@ export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) 
                     'duration  :' + data.markers[j].duration + 's (' + duration + ')';
 
                 channelList[data.markers[j].channel].caipy.push({
-                    id: data.markers[j].clip + data.markers[j].time,
+                    id: Math.random().toString(36).substring(7),
                     group: 1,
                     start: dateStart,
                     end: dateEnd,

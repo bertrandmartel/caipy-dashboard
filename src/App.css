@@ -1,5 +1,19 @@
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 
+.form-error {
+    padding-top:10px;
+}
+
+.switch label input[type=checkbox]:checked+.lever:after,
+.switch label input[type=checkbox]:checked+.lever {
+    background-color: #1e88e5;
+}
+
+.switch {
+    padding-top: 25px;
+    margin-left: 25px;
+}
+
 .collection .collection-item {
     padding-bottom: 5px;
 }
@@ -188,6 +202,8 @@ div .modal .modal-footer .btn {
     background: #FFFFFF;
     font-family: Roboto;
 }
+
+
 
 
 
