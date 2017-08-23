@@ -78,9 +78,15 @@ function initGroups() {
     });
     groups.add({
         id: 1,
-        type: "point",
+        type: "range",
         content: 'Caipy Events',
         className: 'caipy-group'
+    });
+    groups.add({
+        id: 2,
+        type: "range",
+        content: 'Start Over',
+        className: 'startover-group'
     });
     return groups;
 }

@@ -50,6 +50,8 @@ export class TabCollection extends Component {
                                                             <Timeline key={value.channelName}
                                                                       channel={value.channelName}
                                                                       data={value}
+                                                                      caipyData={this.props.caipyData}
+                                                                      epgData={this.props.epgData}
                                                                       onUpdatePage={this.updatePage}
                                                                       options={this.props.options}
                                                                       actionType={this.props.actionType}

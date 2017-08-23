@@ -21,3 +21,9 @@ export const defaultZoomWindowSize = 0.5 * 60 * 60 * 1000;
  * @type {Number}
  */
 export const defaultWindowInitSize = 2 * 60 * 60 * 1000;
+
+/**
+ * Start over time range in milliseconds (before & after program start )
+ * @type {Number}
+ */
+export const startOverRange = 10 * 60 * 1000;

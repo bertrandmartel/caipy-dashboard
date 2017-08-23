@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom';
 import moment from 'moment';
 import vis from 'vis';
 
+//import StartOver functions
+import * as StartOver from '../startover/StartOver.js';
+
 /**
  * The Timeline object used to render a vis.js timeline
  */
@@ -13,10 +16,13 @@ export class Timeline extends Component {
         stop: ""
     }
 
+    currentTime = null;
+
     constructor(props) {
         super(props);
         this.updateData = this.updateData.bind(this);
         this.onSelect = this.onSelect.bind(this);
+        this.onClick = this.onClick.bind(this);
     }
 
     componentDidMount() {
@@ -47,6 +53,7 @@ export class Timeline extends Component {
 
         return {
             orientation: 'top',
+            showCurrentTime: true,
             stack: options.stack,
             type: options.type,
             start: window.start,
@@ -130,6 +137,19 @@ export class Timeline extends Component {
     }
 
     /**
+     * Called when user click on timeline
+     * @param  {Object} properties properties
+     */
+    onClick(properties) {
+        if (this.currentTime) {
+            this.timeline.removeCustomTime(this.currentTime);
+        }
+        this.currentTime = properties.time;
+        this.timeline.addCustomTime(properties.time, properties.time);
+        console.log(StartOver.computeStartover(properties.time, this.props.caipyData, this.props.epgData, this.props.channel));
+    }
+
+    /**
      * Create or update timeline
      * 
      * @param  {Object}  config properties
@@ -148,6 +168,7 @@ export class Timeline extends Component {
         if (create) {
             this.timeline = new vis.Timeline(container, null, options);
             this.timeline.on('select', this.onSelect);
+            this.timeline.on('mouseDown', this.onClick);
         } else {
             this.timeline.setOptions(options);
         }
