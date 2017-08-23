@@ -17,8 +17,11 @@ require("moment-duration-format");
  */
 export function getData(mode, startDate, endDate, cutProgramState, cutProgramDuration, preset, cb) {
 
-    startDate = moment(startDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
-    endDate = moment(endDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
+    startDate += "00:00:00";
+    endDate += "23:59:59";
+
+    startDate = moment(startDate, "DD/MM/YYYYHH:mm:ss").utc().format("YYYYMMDDHHmmSS");
+    endDate = moment(endDate, "DD/MM/YYYYHH:mm:ss").utc().format("YYYYMMDDHHmmSS");
 
     if (mode === "live") {
 
@@ -244,7 +247,7 @@ export function getDemoProgram(channels, cutState, cutDuration) {
  * @param  {Function} cb          Callback to return when all promise have ended
  */
 export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) {
-    
+
     var caipyData = [];
 
     fetch(url + "/getdata?preset=" + preset +
