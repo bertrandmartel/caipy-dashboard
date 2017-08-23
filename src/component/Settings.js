@@ -5,7 +5,7 @@ import React, { Component } from 'react';
 import { Modal, Button, Input, Row } from 'react-materialize';
 
 //import constant values
-import * as Constant from './Constant.js';
+import * as Constant from '../constants/Constant.js';
 
 // jquery
 import $ from 'jquery';

@@ -1,0 +1,100 @@
+/**
+ * This file contains essentially CSS change of materialize css to change the main theme color
+ */
+
+.switch label input[type=checkbox]:checked+.lever:after,
+.switch label input[type=checkbox]:checked+.lever {
+    background-color: #1e88e5;
+}
+
+[type="checkbox"]:checked+label:before {
+    top: auto;
+    border-right: 2px solid #1e88e5;
+    border-bottom: 2px solid #1e88e5;
+}
+
+.dropdown-content li>span {
+    color: #1e88e5
+}
+
+.picker__date-display,
+.picker__weekday-display,
+.picker__day--selected,
+.picker__day--selected:hover,
+.picker--focused .picker__day--selected {
+    background-color: #1e88e5;
+}
+
+.picker__nav--prev:hover,
+.picker__nav--next:hover,
+button.picker__today:focus,
+button.picker__clear:focus,
+button.picker__close:focus {
+    background-color: #90CAF9;
+}
+
+.picker__today,
+.picker__close,
+.picker__day.picker__day--today {
+    color: #1e88e5;
+}
+
+.switch label input[type=checkbox]:checked+.lever:after,
+.switch label input[type=checkbox]:checked+.lever {
+    background-color: #1e88e5;
+}
+
+.chip {
+    color: black;
+    background-color: white;
+}
+
+
+.pagination li.active {
+    background-color: #1e88e5;
+}
+
+.tab-main .tabs .indicator {
+    background-color: #1e88e5;
+}
+
+.tabs .tab a.active {
+    color: #1e88e5;
+}
+
+.tabs .tab a:hover {
+    color: #1e88e5;
+}
+
+.tabs .tab a {
+    color: #1e88e5;
+}
+
+.main input[type=text]:focus:not([readonly])+label {
+    color: #1e88e5;
+}
+
+.main input[type=text]:focus:not([readonly]) {
+    border-bottom: 1px solid #1e88e5;
+    box-shadow: 0 1px 0 0 #1e88e5;
+    color: #000000;
+}
+
+.modal input[type=text]:focus:not([readonly])+label {
+    color: #1e88e5;
+}
+
+.modal input[type=text]:focus:not([readonly]) {
+    border-bottom: 1px solid #1e88e5;
+    box-shadow: 0 1px 0 0 #1e88e5;
+    color: #000000;
+}
+
+[type="checkbox"]:checked+label:before {
+    border-right: 2px solid #1e88e5;
+    border-bottom: 2px solid #1e88e5;
+}
+
+.dropdown-content li>span {
+    color: #1e88e5
+}

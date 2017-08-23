@@ -1,0 +1,68 @@
+/**
+ * This file contains essentialy vis.js timeline customized style 
+ */
+
+.timeline-object {
+    margin: 15px;
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+.vis-timeline {
+    font-size: 14pt;
+    background: #FFFFFF;
+    font-family: Roboto;
+}
+
+.vis-item {
+    background-color: #4182F2;
+    font-size: 15pt;
+    color: black;
+}
+
+.vis-item.vis-selected {
+    border-color: white;
+    border-width: 2px;
+}
+
+.vis-time-axis .vis-text {
+    padding-top: 10px;
+    padding-left: 10px;
+}
+
+.vis-time-axis .vis-grid.vis-minor {
+    border-width: 2px;
+    border-color: #E1E1E1;
+}
+
+.vis-item.caipy {
+    color: white;
+    background-color: #DE463D;
+    border-color: #EF9A9A;
+}
+
+.vis-item.caipy.vis-selected {
+    border-color: white;
+    border-width: 2px;
+}
+
+.vis-item.program {
+    color: white;
+    background-color: #1E88E5;
+}
+
+.vis-left label {
+    font-size: 14pt;
+    color: black;
+    font-family: Roboto
+}
+
+.vis-center label {
+    font-size: 12pt;
+    color: white;
+    font-family: Roboto
+}
+
+.caipy-group {
+    background-color: #EEEEEE;
+}

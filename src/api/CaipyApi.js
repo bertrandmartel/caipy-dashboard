@@ -1,7 +1,66 @@
 import moment from 'moment';
 import vis from 'vis';
+import * as Storage from '../stores/Storage.js';
 
 require("moment-duration-format");
+
+/**
+ * Main data processing function that will retrieve data from API or local JSON depending on mode
+ * 
+ * @param  {String}   mode               app mode (demo or live)
+ * @param  {String}   startDate          start date in DD/MM/YYYY
+ * @param  {String}   endDate            end date in DD/MM/YYYY
+ * @param  {bool}     cutProgramState    state of cut program feature
+ * @param  {Number}   cutProgramDuration all program with less than the specified duration in sec will be removed
+ * @param  {String}   preset             preset value determining how the data will be aggregated from the remote Caipy API
+ * @param  {Function} cb                 Callback function
+ */
+export function getData(mode, startDate, endDate, cutProgramState, cutProgramDuration, preset, cb) {
+
+    startDate = moment(startDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
+    endDate = moment(endDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
+
+    if (mode === "live") {
+
+        //get channel list
+        getPrograms(Storage.getApiUrl(), startDate, endDate, cutProgramState, cutProgramDuration, function(err, programRes, epgData) {
+            if (err) {
+                return cb(err, null);
+            }
+            getCaipyData(Storage.getApiUrl(), startDate, endDate, preset, programRes, function(err, caipyRes, caipyData) {
+                if (err) {
+                    return cb(err, null);
+                }
+                var items = buildChannelMap(startDate, endDate, caipyRes);
+
+                cb(null, {
+                    caipyEvents: caipyData,
+                    epgPrograms: epgData,
+                    timelineItems: items
+                })
+            })
+        });
+    } else {
+        var data = require('./demo-config/demo-data.json');
+
+        var channels = [
+            require('./demo-config/demo-tf1.json'),
+            require('./demo-config/demo-france2.json'),
+            require('./demo-config/demo-m6.json')
+        ];
+
+        var epgResult = getDemoProgram(channels, cutProgramState, cutProgramDuration);
+        var caipyResult = getDemoEvents(data, epgResult.channels);
+
+        var items = buildChannelMap(startDate, endDate, caipyResult.channels);
+
+        cb(null, {
+            caipyEvents: caipyResult.caipy,
+            epgPrograms: epgResult.programs,
+            timelineItems: items
+        })
+    }
+}
 
 /**
  * Initialize Timeline groups
@@ -26,7 +85,12 @@ function initGroups() {
 /**
  * Get EPG programs by retrieving channel list and EPG for each channel 
  * 
- * @param  {Function} cb(err,res) callback that holds the result return    
+ * @param  {String}   url         Caipy API URL
+ * @param  {String}   startDate   start date in DD/MM/YYYY format
+ * @param  {String}   stopDate    endDate in DD/MM/YYYY format
+ * @param  {bool}     cutState    state of cut program feature (enabled/disabled)
+ * @param  {Number}   cutDuration cut program duration
+ * @param  {Function} cb          Callback
  */
 export function getPrograms(url, startDate, stopDate, cutState, cutDuration, cb) {
 
@@ -173,14 +237,14 @@ export function getDemoProgram(channels, cutState, cutDuration) {
  * Get Caipy data from its API
  * 
  * @param  {String}   url         URL configured
- * @param  {String}   startDate   filter start date in YYYYMMDDHHmmss format
- * @param  {String}   stopDate    filter end date in YYYYMMDDHHmmss format
+ * @param  {String}   startDate   filter start date in DD/MM/YYYY format
+ * @param  {String}   stopDate    filter end date in DD/MM/YYYY format
  * @param  {String}   preset      preset value
  * @param  {Object}   channelList  Object holding the list of channel with the epg items 
  * @param  {Function} cb          Callback to return when all promise have ended
  */
 export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) {
-
+    
     var caipyData = [];
 
     fetch(url + "/getdata?preset=" + preset +
@@ -307,12 +371,13 @@ export function getDemoEvents(data, channelList) {
 /**
  * Build the item map necessary for the timeline
  * 
- * @param  {String} startDate start date in YYYYMMDDHHmmss format
- * @param  {String} stopDate  end date in YYYYMMDDHHmmss format
+ * @param  {String} startDate start date in DD/MM/YYYY format
+ * @param  {String} stopDate  end date in DD/MM/YYYY format
  * @param  {Object} channels  Object holding caipy events & epg programs
  * @return {Array}            Array of DataSet item for the timeline object
  */
 export function buildChannelMap(startDate, stopDate, channels) {
+
     var channelList = [];
 
     for (var property in channels) {
