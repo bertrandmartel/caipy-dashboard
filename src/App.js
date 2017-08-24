@@ -166,6 +166,7 @@ class App extends Component {
                     return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;
                 });
                 that.channels = res.channels;
+                that.updateState("tools");
             });
         }
     }
