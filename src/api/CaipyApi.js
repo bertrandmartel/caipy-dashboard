@@ -45,17 +45,16 @@ export function getData(mode, startDate, endDate, cutProgramState, cutProgramDur
         });
     } else {
         var data = require('./demo-config/demo-data.json');
-
-        var channels = [
-            require('./demo-config/demo-tf1.json'),
-            require('./demo-config/demo-france2.json'),
-            require('./demo-config/demo-m6.json')
-        ];
+        var channels = require('./demo-config/demo-tf1.json');
 
         var epgResult = getDemoProgram(channels, cutProgramState, cutProgramDuration);
         var caipyResult = getDemoEvents(data, epgResult.channels);
 
-        var items = buildChannelMap(startDate, endDate, caipyResult.channels);
+        var items = buildChannelMap(startDate, endDate, caipyResult.channels, epgResult.programs.name);
+
+        console.log(items);
+        console.log(caipyResult);
+        console.log(epgResult);
 
         cb(null, {
             caipyEvents: caipyResult.caipy,
@@ -161,52 +160,46 @@ export function getPrograms(url, channel, startDate, stopDate, cutState, cutDura
  * @return {Object}          an object that enclose the epg data set + the channel list generated
  */
 export function getDemoProgram(channels, cutState, cutDuration) {
-    var programData = [];
-    var channelList = {};
+    var programData = {
+        "name": channels.tvin_name,
+        rows: channels.events
+    };
 
-    for (var i = 0; i < channels.length; i++) {
+    var epgItems = [];
 
-        programData.push({
-            "name": channels[i].tvin_name,
-            rows: channels[i].events
-        });
+    //populate events
+    for (var j = 0; j < channels.events.length; j++) {
 
-        var epgItems = [];
+        var start = channels.events[j].start;
+        var end = channels.events[j].end;
 
-        //populate events
-        for (var j = 0; j < channels[i].events.length; j++) {
+        var durationDiff = parseInt(moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('s'), 10);
 
-            var start = channels[i].events[j].start;
-            var end = channels[i].events[j].end;
+        if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
+            channels.events.splice(j, 1);
+        } else {
+            var duration = moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('hh[h]mm[m]ss[s]');
 
-            var durationDiff = parseInt(moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('s'), 10);
+            var tooltip = 'title : ' + channels.events[j].title + '<br/>' +
+                'time  : ' + moment(start).format("HH:mm") + '-' + moment(end).format("HH:mm") + '<br/>' +
+                'duration  :' + duration;
 
-            if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
-                channels[i].events.splice(j, 1);
-            } else {
-                var duration = moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('hh[h]mm[m]ss[s]');
-
-                var tooltip = 'title : ' + channels[i].events[j].title + '<br/>' +
-                    'time  : ' + moment(start).format("HH:mm") + '-' + moment(end).format("HH:mm") + '<br/>' +
-                    'duration  :' + duration;
-
-                epgItems.push({
-                    id: channels[i].events[j].event_id,
-                    group: 0,
-                    start: new Date(start),
-                    end: new Date(end),
-                    content: channels[i].events[j].title,
-                    className: "program",
-                    title: tooltip
-                });
-            }
+            epgItems.push({
+                id: channels.events[j].event_id,
+                group: 0,
+                start: new Date(start),
+                end: new Date(end),
+                content: channels.events[j].title,
+                className: "program",
+                title: tooltip
+            });
         }
-        channelList[channels[i].tvin_name] = {};
-        channelList[channels[i].tvin_name].program = epgItems;
     }
     return {
         programs: programData,
-        channels: channelList
+        channels: {
+            program: epgItems
+        }
     }
 }
 
@@ -314,8 +307,8 @@ export function getDemoEvents(data, channelList) {
             });
         }
 
-        if (!channelList[data.markers[j].channel].caipy) {
-            channelList[data.markers[j].channel].caipy = [];
+        if (!channelList.caipy) {
+            channelList.caipy = [];
         }
         var dateStart = new Date(data.markers[j].time);
         var dateEnd = new Date((new Date(data.markers[j].time).getTime()) + data.markers[j].duration * 1000);
@@ -326,7 +319,7 @@ export function getDemoEvents(data, channelList) {
             'time  : ' + moment(dateStart).format("HH:mm") + '-' + moment(dateEnd).format("HH:mm") + '<br/>' +
             'duration  :' + data.markers[j].duration + 's (' + duration + ')';
 
-        channelList[data.markers[j].channel].caipy.push({
+        channelList.caipy.push({
             id: data.markers[j].clip + data.markers[j].time,
             group: 1,
             start: dateStart,
