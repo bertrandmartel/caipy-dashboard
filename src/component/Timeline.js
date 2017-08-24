@@ -6,6 +6,8 @@ import vis from 'vis';
 //import StartOver functions
 import * as StartOver from '../startover/StartOver.js';
 
+const startOverId = "startOverId";
+
 /**
  * The Timeline object used to render a vis.js timeline
  */
@@ -17,11 +19,13 @@ export class Timeline extends Component {
     }
 
     currentTime = null;
+    lastChangedTime = null;
 
     constructor(props) {
         super(props);
         this.updateData = this.updateData.bind(this);
         this.onSelect = this.onSelect.bind(this);
+        this.onTimeChange = this.onTimeChange.bind(this);
         this.onClick = this.onClick.bind(this);
     }
 
@@ -137,16 +141,65 @@ export class Timeline extends Component {
     }
 
     /**
+     * Compute start over and replace the current startover item.
+     */
+    computeStartOver() {
+        var startOver = StartOver.computeStartover(this.currentTime, this.props.caipyData, this.props.epgData, this.props.channel);
+
+        this.timeline.itemSet.itemsData.remove(startOverId);
+
+        var tooltip = 'title    : ' + startOver.program.title + '<br/>' +
+            'epg time : ' + moment(new Date(startOver.program.start)).format("HH:mm") + '-' + moment(new Date(startOver.program.end)).format("HH:mm");
+
+        if (startOver.startover) {
+
+            tooltip += '<br/>start time : ' + moment(new Date(startOver.startover.time)).format("HH:mm");
+            tooltip += '<br/>clip : ' + startOver.startover.clip;
+
+            this.timeline.itemSet.itemsData.update({
+                id: startOverId,
+                group: 2,
+                start: new Date(startOver.startover.time),
+                end: this.currentTime,
+                content: startOver.program.title,
+                className: "startover",
+                title: tooltip
+            });
+        } else {
+            this.timeline.itemSet.itemsData.update({
+                id: startOverId,
+                group: 2,
+                start: new Date(startOver.program.start),
+                end: this.currentTime,
+                content: startOver.program.title,
+                className: "startover",
+                title: tooltip
+            });
+        }
+    }
+
+    /**
+     * Called when time change
+     * @param  {Object} properties properties
+     */
+    onTimeChange(properties) {
+        this.currentTime = properties.time;
+        this.computeStartOver();
+    }
+
+    /**
      * Called when user click on timeline
      * @param  {Object} properties properties
      */
     onClick(properties) {
-        if (this.currentTime) {
-            this.timeline.removeCustomTime(this.currentTime);
+        for (var i = this.timeline.customTimes.length - 1; i >= 0; i--) {
+            if (this.timeline.customTimes[i]) {
+                this.timeline.removeCustomTime(this.timeline.customTimes[i].options.id);
+            }
         }
         this.currentTime = properties.time;
         this.timeline.addCustomTime(properties.time, properties.time);
-        console.log(StartOver.computeStartover(properties.time, this.props.caipyData, this.props.epgData, this.props.channel));
+        this.computeStartOver();
     }
 
     /**
@@ -168,7 +221,8 @@ export class Timeline extends Component {
         if (create) {
             this.timeline = new vis.Timeline(container, null, options);
             this.timeline.on('select', this.onSelect);
-            this.timeline.on('mouseDown', this.onClick);
+            this.timeline.on('timechange', this.onTimeChange);
+            this.timeline.on('click', this.onClick);
         } else {
             this.timeline.setOptions(options);
         }

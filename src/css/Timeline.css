@@ -37,8 +37,13 @@
 
 .vis-item.caipy {
     color: white;
-    background-color: #DE463D;
+    background-color: #db4437;
     border-color: #EF9A9A;
+}
+
+.vis-item.startover {
+    color: white;
+    background-color: #f4b400;
 }
 
 .vis-item.caipy.vis-selected {
@@ -48,7 +53,7 @@
 
 .vis-item.program {
     color: white;
-    background-color: #1E88E5;
+    background-color: #4184f3;
 }
 
 .vis-left label {
@@ -66,3 +71,5 @@
 .caipy-group {
     background-color: #EEEEEE;
 }
+
+.vis-label .vis-inner {max-height: 100px;}
