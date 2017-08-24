@@ -23,7 +23,7 @@
 
 /* checbox rectify placement next to input in global settings modal*/
 [type="checkbox"]+label{
-    padding-top: 35px;
+    padding-top: 40px;
     margin-left: 25px;
 }
 
@@ -32,16 +32,18 @@
     padding-top: 10px;
 }
 
-/* checkbox rectify placement (global settings modal)*/
+[type="checkbox"].filled-in+label:before, [type="checkbox"].filled-in+label:after{
+    margin-top:40px;
+}
+
 [type="checkbox"]:checked+label:before,
-[type="checkbox"]+label:before,
-[type="checkbox"]:not(.filled-in)+label:after {
-    top: auto;
+[type="checkbox"].filled-in:checked+label:before{
+    top:2px;
 }
 
 /*rectify switch placement in cut program modal*/
 .switch {
-    padding-top: 25px;
+    padding-top: 5px;
     margin-left: 25px;
 }
 

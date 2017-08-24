@@ -419,12 +419,12 @@ export class GlobalSettingsView extends Component {
                     >
                     <Row>
                         <Input autoFocus={this.state.zoomAutoFocus} onFocus={this.focusText} key={'zoomWindowSize' + zoomWindowValue + this.tempSettings.zoomWindowSize} label="zoom window size (in seconds)" ref="zoomWindowSize" onChange={(e,value)=>this.handleInputChange(e,value,'zoomCheck')} placeholder="Enter a value in seconds" s={6} defaultValue={zoomWindowValue} onKeyPress={(e) => this.handleKeyPress(e)}/>
-                        <Input checked={this.state.zoomCheck} ref="zoomCheck" name='zoomCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultZoomValue(e,value)} s={6}/>
+                        <Input className="filled-in" checked={this.state.zoomCheck} ref="zoomCheck" name='zoomCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultZoomValue(e,value)} s={6}/>
                     </Row>
                     <div className="form-modal">
                         <Row>
                             <Input autoFocus={this.state.windowAutoFocus} onFocus={this.focusText} key={'initWindowSize' + initWindowValue + this.tempSettings.initWindowSize} label="init window size (in seconds)" ref="initWindowSize" onChange={(e,value)=>this.handleInputChange(e,value,'windowCheck')} placeholder="Enter a value in seconds" s={6} defaultValue={initWindowValue} onKeyPress={(e) => this.handleKeyPress(e)}/>
-                            <Input checked={this.state.windowCheck} ref="windowCheck"  name='windowCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultWindowSizeValue(e,value)} s={6}/>
+                            <Input className="filled-in" checked={this.state.windowCheck} ref="windowCheck"  name='windowCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultWindowSizeValue(e,value)} s={6}/>
                         </Row>
                     </div>
                     <Row className="error-message form-error">
