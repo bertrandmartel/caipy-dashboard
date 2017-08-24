@@ -43,24 +43,18 @@ export class TabCollection extends Component {
                             <Tab title="timeline" active>
                                 <div className={this.props.ready ? "" : "hidden"}>
                                     <Collection>
-                                        {
-                                            this.props.items.map(function(value, index){
-                                                return (
-                                                        <CollectionItem className="coll-item" key={value.channelName + "-coll"}>
-                                                            <Timeline key={value.channelName}
-                                                                      channel={value.channelName}
-                                                                      data={value}
-                                                                      caipyData={this.props.caipyData}
-                                                                      epgData={this.props.epgData}
-                                                                      onUpdatePage={this.updatePage}
-                                                                      options={this.props.options}
-                                                                      actionType={this.props.actionType}
-                                                                      settings={this.props.settings}
-                                                                      />
-                                                        </CollectionItem>             
-                                               );
-                                            },this)
-                                        }
+                                        <CollectionItem className="coll-item" key={this.props.items.channelName + "-coll"}>
+                                            <Timeline key={this.props.items.channelName}
+                                                      channel={this.props.items.channelName}
+                                                      data={this.props.items}
+                                                      caipyData={this.props.caipyData}
+                                                      epgData={this.props.epgData}
+                                                      onUpdatePage={this.updatePage}
+                                                      options={this.props.options}
+                                                      actionType={this.props.actionType}
+                                                      settings={this.props.settings}
+                                                      />
+                                        </CollectionItem>
                                     </Collection>
                                 </div>
                             </Tab>

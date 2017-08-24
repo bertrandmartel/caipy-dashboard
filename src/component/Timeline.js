@@ -3,9 +3,16 @@ import ReactDOM from 'react-dom';
 import moment from 'moment';
 import vis from 'vis';
 
+//react materialize components
+import { Button, Icon } from 'react-materialize';
+
 //import StartOver functions
 import * as StartOver from '../startover/StartOver.js';
 
+//storage functions
+import * as Storage from '../stores/Storage.js';
+
+//constant id for start over item in timeline
 const startOverId = "startOverId";
 
 /**
@@ -30,19 +37,8 @@ export class Timeline extends Component {
     }
 
     componentDidMount() {
-        this.updateData(this.props, true);
-    }
-
-    fit() {
-        var selection = this.timeline.getSelection();
-        if (selection.length > 0) {
-            this.timeline.focus(selection);
-            this.timeline.setSelection([]);
-            let startDate = moment(this.timeline.itemSet.items[selection[0]].data.start.getTime() - this.props.settings.zoomWindowSize).format("YYYY-MM-DD HH:mm:ss");
-            let stopDate = moment(this.timeline.itemSet.items[selection[0]].data.end.getTime() + this.props.settings.zoomWindowSize).format("YYYY-MM-DD HH:mm:ss");
-            this.timeline.setWindow(startDate, stopDate);
-        } else {
-            //this.timeline.setWindow(this.date.start, this.date.stop);
+        if (this.props.data.items) {
+            this.updateData(this.props, true);
         }
     }
 
@@ -84,9 +80,6 @@ export class Timeline extends Component {
      */
     componentDidUpdate() {
         switch (this.props.actionType) {
-            case "fit":
-                this.fit();
-                break;
             case "options-timeline":
                 var options = this.getOptions(this.timeline.getWindow(), this.props.options);
                 this.timeline.setOptions(options);
@@ -187,19 +180,64 @@ export class Timeline extends Component {
         this.computeStartOver();
     }
 
-    /**
-     * Called when user click on timeline
-     * @param  {Object} properties properties
-     */
-    onClick(properties) {
+    clearCustomTime() {
         for (var i = this.timeline.customTimes.length - 1; i >= 0; i--) {
             if (this.timeline.customTimes[i]) {
                 this.timeline.removeCustomTime(this.timeline.customTimes[i].options.id);
             }
         }
+    }
+    /**
+     * Called when user click on timeline
+     * @param  {Object} properties properties
+     */
+    onClick(properties) {
+        this.clearCustomTime();
         this.currentTime = properties.time;
         this.timeline.addCustomTime(properties.time, properties.time);
         this.computeStartOver();
+    }
+
+    createCustomTime(window) {
+        this.clearCustomTime();
+        var range = this.timeline.getWindow();
+        var date = new Date(range.start.getTime() + (range.end.getTime() - range.start.getTime()) / 2);
+        this.timeline.addCustomTime(date, date);
+        this.onTimeChange({
+            time: date
+        });
+    }
+
+    move(value) {
+        var range = this.timeline.getWindow();
+        var interval = range.end - range.start;
+        this.timeline.setWindow({
+            start: range.start.valueOf() - interval * value,
+            end: range.end.valueOf() - interval * value
+        });
+    }
+
+    moveLeft() {
+        this.move(0.2);
+    }
+
+    moveRight() {
+        this.move(-0.2);
+    }
+
+    zoomIn() {
+        this.timeline.zoomIn(0.5);
+    }
+
+    zoomOut() {
+        this.timeline.zoomOut(0.5);
+    }
+
+    stackToggle() {
+        this.props.options.stack = !this.props.options.stack;
+        var options = this.getOptions(this.timeline.getWindow(), this.props.options);
+        this.timeline.setOptions(options);
+        Storage.setStack(this.props.options.stack);
     }
 
     /**
@@ -228,12 +266,27 @@ export class Timeline extends Component {
         }
         this.timeline.setGroups(config.data.groups);
         this.timeline.setItems(config.data.items);
+        this.createCustomTime(window);
     }
 
     render() {
         return <div className="timeline-tools">
+
                     <h5 key={this.props.data.channelName + "-title"} className="title">{this.props.data.channelName} </h5>
-                    <div className="timeline-object" id={this.props.data.channelName}></div>
+
+                    <div className="timeline-object">
+                    
+                        <div className="pull-right">
+                            <Button waves='light' onClick={() => this.moveLeft()} className="blue darken-1 tools"><Icon small>keyboard_arrow_left</Icon></Button>
+                            <Button waves='light' onClick={() => this.moveRight()} className="blue darken-1 tools"><Icon small>keyboard_arrow_right</Icon></Button>
+                            <Button waves='light' onClick={() => this.zoomIn()} className="blue darken-1 tools"><Icon small>zoom_in</Icon></Button>
+                            <Button waves='light' onClick={() => this.zoomOut()} className="blue darken-1 tools"><Icon small>zoom_out</Icon></Button>
+                            <Button waves='light' onClick={() => this.stackToggle()} className="blue darken-1 tools"><Icon small>clear_all</Icon></Button>
+                        </div>
+
+                        <div className="timeline-container" id={this.props.data.channelName}></div>
+                    </div>
+               
                 </div>;
     }
 }

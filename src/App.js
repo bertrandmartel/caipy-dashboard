@@ -113,8 +113,6 @@ class App extends Component {
     constructor() {
         super();
         this.initStorage();
-        this.fit = this.fit.bind(this);
-        this.stackToggle = this.stackToggle.bind(this);
         this.refresh = this.refresh.bind(this);
         this.setUrlSettings = this.setUrlSettings.bind(this);
         this.setMode = this.setMode.bind(this);
@@ -201,7 +199,7 @@ class App extends Component {
      * @param  {String} actionType type of action to perform ("create","update","idle")
      */
     parseItems(caipyData, epgData, items, actionType) {
-        this.items = items;
+        this.items = items[0];
         this.caipyData = caipyData;
         this.epgData = epgData;
         this.updateState(actionType);
@@ -332,28 +330,13 @@ class App extends Component {
         this.updateState("options-global");
     }
 
-    /**
-     * fit the items in the timeline according to time window or selected items
-     */
-    fit() {
-        this.updateState("fit");
-    }
-
-    stackToggle() {
-        this.options.stack = !this.options.stack;
-        Storage.setStack(this.options.stack);
-        this.updateState("options-timeline");
-    }
-
     render() {
         return (
             <div className="body">
                 <div className="main">
 
                     <TopNavbar mode={this.state.mode}
-                               onFit={this.fit}
-                               onRefresh={this.refresh}
-                               onStackToggle={this.stackToggle}/>
+                               onRefresh={this.refresh}/>
 
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 onPresetChange={this.setPreset}
