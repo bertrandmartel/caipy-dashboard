@@ -92,6 +92,14 @@ export function getPreset() {
     return getItem("preset", "default");
 }
 
+export function setChannel(channel) {
+    setItem("channel", channel);
+}
+
+export function getChannel() {
+    return getItem("channel", "TF1");
+}
+
 export function setCutProgramDuration(value) {
     setItem("cutProgramDuration", value);
 }

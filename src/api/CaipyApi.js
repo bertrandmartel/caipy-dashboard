@@ -15,7 +15,7 @@ require("moment-duration-format");
  * @param  {String}   preset             preset value determining how the data will be aggregated from the remote Caipy API
  * @param  {Function} cb                 Callback function
  */
-export function getData(mode, startDate, endDate, cutProgramState, cutProgramDuration, preset, cb) {
+export function getData(mode, startDate, endDate, cutProgramState, cutProgramDuration, preset, channel, cb) {
 
     startDate += "00:00:00";
     endDate += "23:59:59";
@@ -26,20 +26,20 @@ export function getData(mode, startDate, endDate, cutProgramState, cutProgramDur
     if (mode === "live") {
 
         //get channel list
-        getPrograms(Storage.getApiUrl(), startDate, endDate, cutProgramState, cutProgramDuration, function(err, programRes, epgData) {
+        getPrograms(Storage.getApiUrl(), channel, startDate, endDate, cutProgramState, cutProgramDuration, function(err, programRes, epgData) {
             if (err) {
                 return cb(err, null);
             }
-            getCaipyData(Storage.getApiUrl(), startDate, endDate, preset, programRes, function(err, caipyRes, caipyData) {
+            getCaipyData(Storage.getApiUrl(), epgData.name, startDate, endDate, preset, programRes, function(err, caipyRes, caipyData) {
                 if (err) {
                     return cb(err, null);
                 }
-                var items = buildChannelMap(startDate, endDate, caipyRes);
+                var item = buildChannelMap(startDate, endDate, caipyRes, epgData.name);
 
                 cb(null, {
                     caipyEvents: caipyData,
                     epgPrograms: epgData,
-                    timelineItems: items
+                    timelineItems: item
                 })
             })
         });
@@ -101,89 +101,57 @@ function initGroups() {
  * @param  {Number}   cutDuration cut program duration
  * @param  {Function} cb          Callback
  */
-export function getPrograms(url, startDate, stopDate, cutState, cutDuration, cb) {
+export function getPrograms(url, channel, startDate, stopDate, cutState, cutDuration, cb) {
 
-    var programData = [];
-    var channelList = {};
+    var programData = { "name": channel };
 
-    fetch(url + "/getdatachannels?format=json&start=" + startDate)
+    fetch(url + "/getepg?time_format=iso8601&" +
+            "channel=" + channel +
+            "&start=" + startDate + "&end=" + stopDate)
         .then(function(response) {
             if (response.status >= 400) {
                 throw new Error("Bad response from server");
             }
             return response.json();
         })
-        .then(function(channelData) {
-            //get epg for each channel
-            var promises_arr = [];
+        .then(function(data) {
+            var epgItems = [];
 
-            for (var i = 0; i < channelData.channels.length; i++) {
+            //populate data
+            programData.rows = data.events;
 
-                programData.push({ "name": channelData.channels[i].name });
+            //populate events
+            for (var j = data.events.length - 1; j >= 0; j--) {
 
-                promises_arr.push(fetch(url + "/getepg?time_format=iso8601&" +
-                        "channel=" + channelData.channels[i].name +
-                        "&start=" + startDate + "&end=" + stopDate)
-                    .then(function(response) {
-                        if (response.status >= 400) {
-                            throw new Error("Bad response from server");
-                        }
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        var epgItems = [];
+                var dateStart = new Date(data.events[j].start);
+                var dateEnd = new Date(data.events[j].end);
 
-                        //populate data
-                        for (var j = 0; j < programData.length; j++) {
-                            if (programData[j].name === data.tvin_name) {
-                                programData[j].rows = data.events;
-                            }
-                        }
+                var durationDiff = parseInt(moment.duration(dateEnd.getTime() - dateStart.getTime()).format('s'), 10);
 
-                        //populate events
-                        for (j = data.events.length - 1; j >= 0; j--) {
+                if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
+                    data.events.splice(j, 1);
+                } else {
+                    var duration = moment.duration(dateEnd.getTime() - dateStart.getTime()).format('hh[h]mm[m]ss[s]');
 
-                            var dateStart = new Date(data.events[j].start);
-                            var dateEnd = new Date(data.events[j].end);
+                    var tooltip = 'title : ' + data.events[j].title + '<br/>' +
+                        'time  : ' + moment(data.events[j].start).format("HH:mm") + '-' + moment(data.events[j].end).format("HH:mm") + '<br/>' +
+                        'duration  :' + duration;
 
-                            var durationDiff = parseInt(moment.duration(dateEnd.getTime() - dateStart.getTime()).format('s'), 10);
-
-                            if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
-                                data.events.splice(j, 1);
-                            } else {
-                                var duration = moment.duration(dateEnd.getTime() - dateStart.getTime()).format('hh[h]mm[m]ss[s]');
-
-                                var tooltip = 'title : ' + data.events[j].title + '<br/>' +
-                                    'time  : ' + moment(data.events[j].start).format("HH:mm") + '-' + moment(data.events[j].end).format("HH:mm") + '<br/>' +
-                                    'duration  :' + duration;
-
-                                epgItems.push({
-                                    id: data.events[j].event_id,
-                                    group: 0,
-                                    start: dateStart,
-                                    end: dateEnd,
-                                    content: data.events[j].title,
-                                    className: "program",
-                                    title: tooltip
-                                });
-                            }
-                        }
-                        channelList[data.tvin_name] = {};
-                        channelList[data.tvin_name].program = epgItems;
-                    }))
-            }
-
-            Promise.all(promises_arr)
-                .then(function() {
-                    programData.sort(function(a, b) {
-                        return a.name.toUpperCase() < b.name.toUpperCase();
+                    epgItems.push({
+                        id: data.events[j].event_id,
+                        group: 0,
+                        start: dateStart,
+                        end: dateEnd,
+                        content: data.events[j].title,
+                        className: "program",
+                        title: tooltip
                     });
-                    cb(null, channelList, programData);
-                })
-                .catch(function(err) {
-                    cb(err, null);
-                });
-        })
+                }
+            }
+            cb(null, {
+                program: epgItems
+            }, programData);
+        });
 }
 
 /**
@@ -249,16 +217,17 @@ export function getDemoProgram(channels, cutState, cutDuration) {
  * @param  {String}   startDate   filter start date in DD/MM/YYYY format
  * @param  {String}   stopDate    filter end date in DD/MM/YYYY format
  * @param  {String}   preset      preset value
- * @param  {Object}   channelList  Object holding the list of channel with the epg items 
+ * @param  {Object}   channel     Object holding the channel with the epg items 
  * @param  {Function} cb          Callback to return when all promise have ended
  */
-export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) {
+export function getCaipyData(url, channelName, startDate, stopDate, preset, channel, cb) {
 
     var caipyData = [];
 
     fetch(url + "/getdata?preset=" + preset +
             "&format=json&time_format=ISO8601&" +
-            "start=" + startDate + "&stop=" + stopDate)
+            "&channel=" + channelName +
+            "&start=" + startDate + "&stop=" + stopDate)
         .then(function(response) {
             if (response.status >= 400) {
                 throw new Error("Bad response from server");
@@ -285,8 +254,8 @@ export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) 
                     });
                 }
 
-                if (!channelList[data.markers[j].channel].caipy) {
-                    channelList[data.markers[j].channel].caipy = [];
+                if (!channel.caipy) {
+                    channel.caipy = [];
                 }
                 var dateStart = new Date(data.markers[j].time);
                 var dateEnd = new Date((new Date(data.markers[j].time).getTime()) + data.markers[j].duration * 1000);
@@ -297,7 +266,7 @@ export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) 
                     'time  : ' + moment(dateStart).format("HH:mm") + '-' + moment(dateEnd).format("HH:mm") + '<br/>' +
                     'duration  :' + data.markers[j].duration + 's (' + duration + ')';
 
-                channelList[data.markers[j].channel].caipy.push({
+                channel.caipy.push({
                     id: Math.random().toString(36).substring(7),
                     group: 1,
                     start: dateStart,
@@ -310,7 +279,7 @@ export function getCaipyData(url, startDate, stopDate, preset, channelList, cb) 
             caipyData.sort(function(a, b) {
                 return a.name.toUpperCase() < b.name.toUpperCase();
             });
-            cb(null, channelList, caipyData);
+            cb(null, channel, caipyData);
         })
         .catch(function(err) {
             cb(err, null);
@@ -385,34 +354,24 @@ export function getDemoEvents(data, channelList) {
  * @param  {Object} channels  Object holding caipy events & epg programs
  * @return {Array}            Array of DataSet item for the timeline object
  */
-export function buildChannelMap(startDate, stopDate, channels) {
+export function buildChannelMap(startDate, stopDate, channel, channelName) {
 
-    var channelList = [];
+    var items = new vis.DataSet();
 
-    for (var property in channels) {
-        if (channels.hasOwnProperty(property)) {
-            var items = new vis.DataSet();
-
-            for (var i = 0; i < channels[property].program.length; i++) {
-                items.add(channels[property].program[i]);
-            }
-            for (i = 0; i < channels[property].caipy.length; i++) {
-                items.add(channels[property].caipy[i]);
-            }
-
-            channelList.push({
-                channelName: property,
-                start: moment(startDate, "YYYYMMDDHHmmSS").toDate(),
-                stop: moment(stopDate, "YYYYMMDDHHmmSS").toDate(),
-                items: items,
-                groups: initGroups()
-            });
-        }
+    for (var i = 0; i < channel.program.length; i++) {
+        items.add(channel.program[i]);
     }
-    channelList.sort(function(a, b) {
-        return a.channelName.toUpperCase() < b.channelName.toUpperCase();
-    });
-    return channelList;
+    for (i = 0; i < channel.caipy.length; i++) {
+        items.add(channel.caipy[i]);
+    }
+
+    return {
+        channelName: channelName,
+        start: moment(startDate, "YYYYMMDDHHmmSS").toDate(),
+        stop: moment(stopDate, "YYYYMMDDHHmmSS").toDate(),
+        items: items,
+        groups: initGroups()
+    };
 }
 
 /**
@@ -422,6 +381,30 @@ export function buildChannelMap(startDate, stopDate, channels) {
  */
 export function getPresets(url, cb) {
     fetch(url + "/presets")
+        .then(function(response) {
+            if (response.status >= 400) {
+                throw new Error("Bad response from server");
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            cb(null, data);
+        })
+        .catch(function(err) {
+            cb(err, null);
+        });
+}
+
+/**
+ * Get list of channels available.
+ * 
+ * @param  {Function} cb Callback
+ */
+export function getChannels(url, startDate, cb) {
+
+    startDate = moment(startDate, "DD/MM/YYYY").format("YYYYMMDDHHmmSS");
+
+    fetch(url + "/getdatachannels?format=json&start=" + startDate)
         .then(function(response) {
             if (response.status >= 400) {
                 throw new Error("Bad response from server");

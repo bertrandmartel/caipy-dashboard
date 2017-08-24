@@ -84,11 +84,13 @@ export class CaipyDataSetItem extends DataSet {
         var dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
 
         return <CollectionItem className="coll-item" key={this.props.name + "-coll"}>
-                    <h5>{this.props.name}</h5>
+
                     <Pagination items={Math.round(this.props.length/this.props.perPage)} 
                                 activePage={this.state.pageIndex} 
                                 maxButtons={10}
+                                className='pull-right'
                                 onSelect={this.onSelect} />
+
                     <p>{(this.state.pageIndex-1)*this.props.perPage + 1}-{(this.state.pageIndex-1)*this.props.perPage+this.props.perPage} of {this.props.length}
                     </p>
                     <Table className="bordered striped">
@@ -130,15 +132,21 @@ export class EpgDataSetItem extends DataSet {
     render() {
         this.data = this.props.rows;
 
-        var dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
+        var dataRow = [];
+        var length = 0;
+
+        if (this.data) {
+            dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
+            length = this.props.rows.length;
+        }
 
         return <CollectionItem className="coll-item" key={this.props.name + "-coll"}>
-                    <h5>{this.props.name}</h5>
-                    <Pagination items={Math.round(this.props.length/this.props.perPage)} 
+                    <Pagination items={Math.round(length/this.props.perPage)} 
                                 activePage={this.state.pageIndex} 
                                 maxButtons={10}
+                                className='pull-right'
                                 onSelect={this.onSelect} />
-                    <p>{(this.state.pageIndex-1)*this.props.perPage + 1}-{(this.state.pageIndex-1)*this.props.perPage+this.props.perPage} of {this.props.length}
+                    <p>{(this.state.pageIndex-1)*this.props.perPage + 1}-{(this.state.pageIndex-1)*this.props.perPage+this.props.perPage} of {length}
                     </p>
                     <Table className="bordered striped">
                         <thead>

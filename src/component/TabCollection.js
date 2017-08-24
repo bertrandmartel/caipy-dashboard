@@ -80,19 +80,12 @@ export class TabCollection extends Component {
                             <Tab title="epg dataset" active>
                                 <div className={this.props.ready ? "" : "hidden"}>
                                     <Collection>
-                                        {
-                                            this.props.epgData.map(function(value, index){
-                                                return (
-                                                    <EpgDataSetItem key={value.name} 
-                                                                 name={value.name}
-                                                                 rows={value.rows}
-                                                                 length={value.rows.length}
-                                                                 perPage={15}
-                                                                 ref={instance => { this.epgDataSet[value.name] = instance; }}
-                                                                 />
-                                               );
-                                            },this)
-                                        }
+                                        <EpgDataSetItem key={this.props.epgData.name} 
+                                                     name={this.props.epgData.name}
+                                                     rows={this.props.epgData.rows}
+                                                     perPage={15}
+                                                     ref={instance => { this.epgDataSet[this.props.epgData.name] = instance; }}
+                                                     />
                                     </Collection>
                                 </div>
                             </Tab>

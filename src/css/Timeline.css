@@ -2,7 +2,11 @@
  * This file contains essentialy vis.js timeline customized style 
  */
 
-.startover-group{
+.timeline-tools {
+    margin-top: 70px;
+}
+
+.startover-group {
     height: 100px;
     min-height: 100px;
 }
@@ -13,7 +17,7 @@
 
 .timeline-object {
     margin: 15px;
-    margin-top: 0px;
+    margin-top: 30px;
     margin-bottom: 10px;
 }
 
@@ -81,4 +85,6 @@
     background-color: #EEEEEE;
 }
 
-.vis-label .vis-inner {max-height: 100px;}
+.vis-label .vis-inner {
+    max-height: 100px;
+}

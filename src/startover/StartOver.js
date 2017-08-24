@@ -96,15 +96,11 @@ function initCaipyData(caipyData, channel, currentTime) {
  * @return {Object}             program item or null if not found
  */
 function searchCurrentProgram(epgData, channel, currentTime) {
-    for (var i = 0; i < epgData.length; i++) {
-        if (channel === epgData[i].name) {
-            for (var j = 0; j < epgData[i].rows.length; j++) {
-                var start = new Date(epgData[i].rows[j].start).getTime();
-                var end = new Date(epgData[i].rows[j].end).getTime();
-                if (currentTime >= start && currentTime <= end) {
-                    return epgData[i].rows[j];
-                }
-            }
+    for (var j = 0; j < epgData.rows.length; j++) {
+        var start = new Date(epgData.rows[j].start).getTime();
+        var end = new Date(epgData.rows[j].end).getTime();
+        if (currentTime >= start && currentTime <= end) {
+            return epgData.rows[j];
         }
     }
     return null;
@@ -120,16 +116,12 @@ function searchCurrentProgram(epgData, channel, currentTime) {
  */
 function searchLastProgram(epgData, channel, currentTime) {
     var lastProgram;
-    for (var i = 0; i < epgData.length; i++) {
-        if (channel === epgData[i].name) {
-            for (var j = 0; j < epgData[i].rows.length; j++) {
-                var start = new Date(epgData[i].rows[j].start).getTime();
-                if (currentTime < start) {
-                    return (lastProgram ? lastProgram : null);
-                }
-                lastProgram = epgData[i].rows[j];
-            }
+    for (var j = 0; j < epgData.rows.length; j++) {
+        var start = new Date(epgData.rows[j].start).getTime();
+        if (currentTime < start) {
+            return (lastProgram ? lastProgram : null);
         }
+        lastProgram = epgData.rows[j];
     }
     return null;
 }

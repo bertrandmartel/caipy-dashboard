@@ -271,9 +271,7 @@ export class Timeline extends Component {
 
     render() {
         return <div className="timeline-tools">
-
-                    <h5 key={this.props.data.channelName + "-title"} className="title">{this.props.data.channelName} </h5>
-
+        
                     <div className="timeline-object">
                     
                         <div className="pull-right">

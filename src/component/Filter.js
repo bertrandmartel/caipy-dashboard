@@ -25,6 +25,7 @@ export class FilterView extends Component {
         super();
         this.setFilterSettings = this.setFilterSettings.bind(this);
         this.handlePresetChange = this.handlePresetChange.bind(this);
+        this.handleChannelChange = this.handleChannelChange.bind(this);
     }
 
     handleStartDateChange(e, value) {
@@ -39,6 +40,12 @@ export class FilterView extends Component {
     handlePresetChange(e, value) {
         if (typeof this.props.onPresetChange === 'function') {
             this.props.onPresetChange(value);
+        }
+    }
+
+    handleChannelChange(e, value) {
+        if (typeof this.props.onChannelChange === 'function') {
+            this.props.onChannelChange(value);
         }
     }
 
@@ -68,6 +75,24 @@ export class FilterView extends Component {
         return <Row className={this.props.mode === "demo" ? 'filter-row hidden': 'filter-row'}>
                     <input className='hidden' id='startDate' type='hidden' value={this.startDate} />
                     <input className='hidden' id='endDate' type='hidden' value={this.endDate} />
+                    <Input className="presets" onChange={(e,value)=>this.handleChannelChange(e,value)} s={2} type='select' label="Channels" value={this.props.channel}>
+                            {
+                                this.props.channels.map(function(value, index){
+                                    return (
+                                        <option key={value.name} value={value.name}>{value.name}</option>  
+                                   );
+                                },this)
+                            }
+                    </Input>
+                    <Input className="presets" onChange={(e,value)=>this.handlePresetChange(e,value)} s={2} type='select' label="Presets" value={this.props.preset}>
+                            {
+                                this.props.presets.map(function(value, index){
+                                    return (
+                                        <option key={value} value={value}>{value}</option>  
+                                   );
+                                },this)
+                            }
+                    </Input>
                     <Input className='datepicker'
                            ref="startDate" 
                            type="date"  
@@ -119,15 +144,6 @@ export class FilterView extends Component {
                         <div className="col">
                             <Button className="blue darken-1 filter-btn" waves='light' onClick={() => this.setFilterSettings()}><Icon>filter_list</Icon></Button>   
                         </div>
-                        <Input className="presets" onChange={(e,value)=>this.handlePresetChange(e,value)} s={2} type='select' label="Presets" value={this.props.preset}>
-                            {
-                                this.props.presets.map(function(value, index){
-                                    return (
-                                        <option key={value} value={value}>{value}</option>  
-                                   );
-                                },this)
-                            }
-                        </Input>
                 </Row>
     }
 }

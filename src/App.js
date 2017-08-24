@@ -67,6 +67,10 @@ class App extends Component {
      */
     preset = 'default';
 
+    channels = [];
+
+    channel = 'TF1';
+
     /**
      * mode can be "demo" or "live"
      * @type {String}
@@ -92,7 +96,7 @@ class App extends Component {
      * @type {Boolean}
      */
     options = {
-        stack: false,
+        stack: true,
         type: "range"
     };
 
@@ -118,6 +122,7 @@ class App extends Component {
         this.setMode = this.setMode.bind(this);
         this.setFilterSettings = this.setFilterSettings.bind(this);
         this.setPreset = this.setPreset.bind(this);
+        this.setChannel = this.setChannel.bind(this);
         this.excludeProgram = this.excludeProgram.bind(this);
         this.excludeProgramStateChange = this.excludeProgramStateChange.bind(this);
         this.updateGlobalSettings = this.updateGlobalSettings.bind(this);
@@ -137,6 +142,28 @@ class App extends Component {
                     return;
                 }
                 that.presets = res;
+            });
+        }
+    }
+
+    /**
+     * Inititialize presets
+     */
+    initChannel() {
+        this.channel = Storage.getChannel();
+        if (this.mode === "live") {
+            var that = this;
+            ApiUtils.getChannels(Storage.getApiUrl(), this.date.startDate, function(err, res) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                res.channels.sort(function(a, b) {
+                    var textA = a.name.toUpperCase();
+                    var textB = b.name.toUpperCase();
+                    return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;
+                });
+                that.channels = res.channels;
             });
         }
     }
@@ -169,6 +196,7 @@ class App extends Component {
      * On mount check the mode ("live" or "demo") and refresh the data according to this
      */
     componentDidMount() {
+        this.initChannel();
         this.refresh("create");
     }
 
@@ -199,7 +227,7 @@ class App extends Component {
      * @param  {String} actionType type of action to perform ("create","update","idle")
      */
     parseItems(caipyData, epgData, items, actionType) {
-        this.items = items[0];
+        this.items = items;
         this.caipyData = caipyData;
         this.epgData = epgData;
         this.updateState(actionType);
@@ -249,7 +277,8 @@ class App extends Component {
 
         ApiUtils.getData(this.mode,
             this.date.startDate, this.date.endDate,
-            this.cutProgramState, this.cutProgramDuration, this.preset,
+            this.cutProgramState, this.cutProgramDuration,
+            this.preset, this.channel,
             function(err, res) {
                 if (err) {
                     console.log(err);
@@ -292,6 +321,17 @@ class App extends Component {
     setPreset(preset) {
         this.preset = preset;
         Storage.setPreset(preset);
+        this.refresh("update");
+    }
+
+    /**
+     * Set channel
+     * 
+     * @param {String} channel channel name from dropdown list
+     */
+    setChannel(channel) {
+        this.channel = channel;
+        Storage.setChannel(channel);
         this.refresh("update");
     }
 
@@ -340,11 +380,14 @@ class App extends Component {
 
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 onPresetChange={this.setPreset}
+                                onChannelChange={this.setChannel}
                                 mode={this.state.mode}
                                 startDate={this.date.startDate}
                                 endDate={this.date.endDate}
                                 presets={this.presets}
-                                preset={this.preset}/>
+                                channels={this.channels}
+                                preset={this.preset}
+                                channel={this.channel}/>
 
                     <TabCollection ready={this.state.ready} 
                                    items={this.state.items} 

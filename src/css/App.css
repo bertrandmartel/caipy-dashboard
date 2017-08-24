@@ -1,5 +1,9 @@
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 
+.coll-item {
+    position: relative;
+}
+
 .tools {
     margin-left:10px;
     padding-left:15px;
@@ -129,10 +133,10 @@ div .modal .modal-footer .btn {
 }
 
 .filter-row {
-    margin-top: 10px;
+    margin-top: 25px;
     padding-left: 25px;
     padding-right: 25px;
-    margin-bottom: 0px;
+    margin-bottom: 25px;
     padding-bottom: 0px;
 }
 
