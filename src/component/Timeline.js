@@ -146,10 +146,12 @@ export class TimelineContainer extends Component {
 
         this.timeline.itemSet.itemsData.remove(startOverId);
 
-        var tooltip = 'title    : ' + startOver.program.title + '<br/>' +
-            'epg time : ' + moment(new Date(startOver.program.start)).format("HH:mm") + '-' + moment(new Date(startOver.program.end)).format("HH:mm");
+        var tooltip;
 
         if (startOver.startover) {
+
+            tooltip = 'title    : ' + startOver.program.title + '<br/>' +
+                'epg time : ' + moment(new Date(startOver.program.start)).format("HH:mm") + '-' + moment(new Date(startOver.program.end)).format("HH:mm");
 
             tooltip += '<br/>start time : ' + moment(new Date(startOver.startover.time)).format("HH:mm");
             tooltip += '<br/>clip : ' + startOver.startover.clip;
@@ -163,7 +165,11 @@ export class TimelineContainer extends Component {
                 className: "startover",
                 title: tooltip
             });
-        } else {
+        } else if (startOver.program) {
+
+            tooltip = 'title    : ' + startOver.program.title + '<br/>' +
+                'epg time : ' + moment(new Date(startOver.program.start)).format("HH:mm") + '-' + moment(new Date(startOver.program.end)).format("HH:mm");
+
             this.timeline.itemSet.itemsData.update({
                 id: startOverId,
                 group: 2,
@@ -173,6 +179,8 @@ export class TimelineContainer extends Component {
                 className: "startover",
                 title: tooltip
             });
+        } else {
+            console.log("error no program found");
         }
     }
 
