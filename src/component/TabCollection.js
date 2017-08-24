@@ -6,7 +6,7 @@ import { Tabs, Tab, Collection, CollectionItem } from 'react-materialize';
 
 import { CaipyDataSetItem, EpgDataSetItem } from './DataSet.js';
 
-import { Timeline } from './Timeline.js';
+import { TimelineContainer } from './Timeline.js';
 
 /**
  * Tab view showing the dataset & the timeline
@@ -24,6 +24,8 @@ export class TabCollection extends Component {
     constructor(props) {
         super(props);
         this.updatePage = this.updatePage.bind(this);
+        this.playRolling = this.playRolling.bind(this);
+        this.pauseRolling = this.pauseRolling.bind(this);
     }
 
     /**
@@ -37,6 +39,14 @@ export class TabCollection extends Component {
         this.epgDataSet[channel].updatePage(date);
     }
 
+    playRolling(){
+        this.props.onPlayRolling();
+    }
+
+    pauseRolling(){
+        this.props.onPauseRolling();
+    }
+
     render() {
         return <div className='tab-main'>
                     <Tabs>
@@ -44,7 +54,7 @@ export class TabCollection extends Component {
                                 <div className={this.props.ready ? "" : "hidden"}>
                                     <Collection>
                                         <CollectionItem className="coll-item" key={this.props.items.channelName + "-coll"}>
-                                            <Timeline key={this.props.items.channelName}
+                                            <TimelineContainer key={this.props.items.channelName}
                                                       channel={this.props.items.channelName}
                                                       data={this.props.items}
                                                       caipyData={this.props.caipyData}
@@ -53,6 +63,8 @@ export class TabCollection extends Component {
                                                       options={this.props.options}
                                                       actionType={this.props.actionType}
                                                       settings={this.props.settings}
+                                                      onPlayRolling={this.playRolling}
+                                                      onPauseRolling={this.pauseRolling}
                                                       />
                                         </CollectionItem>
                                     </Collection>

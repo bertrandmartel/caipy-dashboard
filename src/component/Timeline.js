@@ -18,7 +18,7 @@ const startOverId = "startOverId";
 /**
  * The Timeline object used to render a vis.js timeline
  */
-export class Timeline extends Component {
+export class TimelineContainer extends Component {
 
     date = {
         start: "",
@@ -28,12 +28,17 @@ export class Timeline extends Component {
     currentTime = null;
     lastChangedTime = null;
 
+    rolling = false;
+
+    rollingPeriod = 2;
+
     constructor(props) {
         super(props);
         this.updateData = this.updateData.bind(this);
         this.onSelect = this.onSelect.bind(this);
         this.onTimeChange = this.onTimeChange.bind(this);
         this.onClick = this.onClick.bind(this);
+        this.rollingTask = this.rollingTask.bind(this);
     }
 
     componentDidMount() {
@@ -187,15 +192,22 @@ export class Timeline extends Component {
             }
         }
     }
+
+    setCustomTime(time) {
+        this.clearCustomTime();
+        this.currentTime = time;
+        this.timeline.addCustomTime(time, time);
+        this.computeStartOver();
+    }
+
     /**
      * Called when user click on timeline
      * @param  {Object} properties properties
      */
     onClick(properties) {
-        this.clearCustomTime();
-        this.currentTime = properties.time;
-        this.timeline.addCustomTime(properties.time, properties.time);
-        this.computeStartOver();
+        if (!this.rolling) {
+            this.setCustomTime(properties.time);
+        }
     }
 
     createCustomTime(window) {
@@ -240,6 +252,42 @@ export class Timeline extends Component {
         Storage.setStack(this.props.options.stack);
     }
 
+    rollingTask() {
+        var nextTime = this.currentTime.getTime() + this.rollingPeriod * 60 * 1000;
+        this.setCustomTime(new Date(nextTime));
+    }
+
+    playRolling() {
+        if (this.rollingId) {
+            clearInterval(this.rollingId);
+        }
+        if (!this.rolling) {
+            this.rollingId = setInterval(this.rollingTask, 500);
+        }
+        this.rolling = !this.rolling;
+        this.props.onPlayRolling();
+    }
+
+    pauseRolling() {
+        if (this.rollingId) {
+            clearInterval(this.rollingId);
+        }
+        this.rolling = !this.rolling;
+        this.props.onPauseRolling();
+    }
+
+    slowerRolling() {
+        if (this.rolling) {
+            this.rollingPeriod /= 2;
+        }
+    }
+
+    fasterRolling() {
+        if (this.rolling) {
+            this.rollingPeriod *= 2;
+        }
+    }
+
     /**
      * Create or update timeline
      * 
@@ -271,7 +319,7 @@ export class Timeline extends Component {
 
     render() {
         return <div className="timeline-tools">
-        
+
                     <div className="timeline-object">
                     
                         <div className="pull-right">
@@ -280,9 +328,14 @@ export class Timeline extends Component {
                             <Button waves='light' onClick={() => this.zoomIn()} className="blue darken-1 tools"><Icon small>zoom_in</Icon></Button>
                             <Button waves='light' onClick={() => this.zoomOut()} className="blue darken-1 tools"><Icon small>zoom_out</Icon></Button>
                             <Button waves='light' onClick={() => this.stackToggle()} className="blue darken-1 tools"><Icon small>clear_all</Icon></Button>
+                            <Button waves='light' onClick={() => this.slowerRolling()} className="blue darken-1 tools"><Icon small>fast_rewind</Icon></Button>
+                            <Button waves='light' onClick={() => this.playRolling()} className={ this.rolling ? "hidden" : "blue darken-1 tools"}><Icon small>play_arrow</Icon></Button>
+                            <Button waves='light' onClick={() => this.pauseRolling()} className={ this.rolling ? "blue darken-1 tools" : "hidden"}><Icon small>stop</Icon></Button>
+                            <Button waves='light' onClick={() => this.fasterRolling()} className="blue darken-1 tools"><Icon small>fast_forward</Icon></Button>
                         </div>
 
                         <div className="timeline-container" id={this.props.data.channelName}></div>
+
                     </div>
                
                 </div>;

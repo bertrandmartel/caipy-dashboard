@@ -126,6 +126,8 @@ class App extends Component {
         this.excludeProgram = this.excludeProgram.bind(this);
         this.excludeProgramStateChange = this.excludeProgramStateChange.bind(this);
         this.updateGlobalSettings = this.updateGlobalSettings.bind(this);
+        this.playRolling = this.playRolling.bind(this);
+        this.pauseRolling = this.pauseRolling.bind(this);
         this.initPreset();
     }
 
@@ -370,6 +372,14 @@ class App extends Component {
         this.updateState("options-global");
     }
 
+    playRolling() {
+        this.updateState("tools");
+    }
+
+    pauseRolling() {
+        this.updateState("tools");
+    }
+
     render() {
         return (
             <div className="body">
@@ -395,7 +405,10 @@ class App extends Component {
                                    epgData={this.state.epgData}
                                    actionType={this.state.actionType}
                                    options={this.options}
-                                   settings={this.settings}/>
+                                   settings={this.settings}
+                                   onPlayRolling={this.playRolling}
+                                   onPauseRolling={this.pauseRolling}
+                                   />
 
                     <ProgressView value={this.state.ready}
                                   message={this.state.message}/>
