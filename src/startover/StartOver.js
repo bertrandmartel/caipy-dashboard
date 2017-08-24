@@ -138,7 +138,7 @@ function searchProgramStartEvent(caipyData, programStart) {
         var startTime = new Date(caipyData[i].time).getTime();
         var endTime = startTime + caipyData[i].duration * 1000;
 
-        if (programStart > startTime && programStart < endTime) {
+        if (programStart >= startTime && programStart < endTime) {
             return {
                 clip: caipyData[i].clip,
                 index: i
@@ -306,8 +306,11 @@ function computeCurrentProgram(program, caipyData) {
             console.log("[012] - Didn't found ad after program start");
             return searchBeforeProgram(programStartEvent, caipyData, programStart);
         }
-    } else {
+    } else if (programStartEvent.index !== -1) {
         console.log("[02] - we do have an ad or no event at all at the beginning of the program");
         return searchBeforeProgram(programStartEvent, caipyData, programStart);
+    } else {
+        console.log("no event have been found at program start");
+        return null;
     }
 }
