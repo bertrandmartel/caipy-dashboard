@@ -13,7 +13,8 @@ import { Footer, Row, Col, Preloader } from 'react-materialize';
 
 // other react components
 import { FilterView } from './component/Filter.js';
-import { UrlSettingsView, GlobalSettingsView } from './component/Settings.js';
+import { GlobalSettingsView } from './component/GlobalSettings.js'
+import { UrlSettingsView } from './component/UrlSettings.js';
 import { TabCollection } from './component/TabCollection.js';
 import { TopNavbar } from './component/TopNavbar.js';
 
