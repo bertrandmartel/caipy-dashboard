@@ -69,7 +69,7 @@ export function getEndDate() {
 }
 
 export function getStack() {
-    return getItem("stack", false, "bool");
+    return getItem("stack", true, "bool");
 }
 
 export function getType() {
@@ -104,30 +104,30 @@ export function setCutProgramDuration(value) {
     setItem("cutProgramDuration", value);
 }
 
-export function setCutProgramState(state) {
-    setItem("cutProgramState", state);
-}
-
 export function getCutProgramDuration() {
-    return getItem("cutProgramDuration", 0);
+    return getItem("cutProgramDuration", Constant.cutProgramDuration, "number");
 }
 
-export function getCutProgramState() {
-    return getItem("cutProgramState", false, "bool");
+export function setStartOverRangeAd(value) {
+    setItem("startOverRangeAd", value);
+}
+
+export function getStartOverRangeAd() {
+    return getItem("startOverRangeAd", Constant.startOverRangeAd, "number");
+}
+
+export function setStartOverRangeSharpStart(value) {
+    setItem("startOverRangeSharpStart", value);
+}
+
+export function getStartOverRangeSharpStart() {
+    return getItem("startOverRangeSharpStart", Constant.startOverRangeSharpStart, "number");
 }
 
 export function getWindowInitSize() {
     return getItem("windowInitSize", Constant.defaultWindowInitSize, "number");
 }
 
-export function getZoomWindowSize() {
-    return getItem("zoomWindowSize", Constant.defaultZoomWindowSize, "number");
-}
-
 export function setWindowInitSize(value) {
     setItem("windowInitSize", value);
-}
-
-export function setZoomWindowSize(value) {
-    setItem("zoomWindowSize", value);
 }

@@ -1,9 +1,9 @@
 //style
 import 'vis/dist/vis.css';
 //import 'materialize-css/dist/css/materialize.min.css';
-import './css/App.css';
 import './css/MaterialColor.css';
 import './css/Timeline.css';
+import './css/App.css';
 
 //react
 import React, { Component } from 'react';
@@ -13,7 +13,7 @@ import { Footer, Row, Col, Preloader } from 'react-materialize';
 
 // other react components
 import { FilterView } from './component/Filter.js';
-import { UrlSettingsView, ProgramSettingsView, GlobalSettingsView } from './component/Settings.js';
+import { UrlSettingsView, GlobalSettingsView } from './component/Settings.js';
 import { TabCollection } from './component/TabCollection.js';
 import { TopNavbar } from './component/TopNavbar.js';
 
@@ -78,20 +78,6 @@ class App extends Component {
     mode = "demo";
 
     /**
-     * Program duration that should be excluded if duration is less than this value.
-     * 
-     * @type {Number}
-     */
-    cutProgramDuration = 0;
-
-    /**
-     * Exclude program duration state (enable/disable).
-     * 
-     * @type {Boolean}
-     */
-    cutProgramState = false;
-
-    /**
      * default timeline item type (false for "range" / true for "point")
      * @type {Boolean}
      */
@@ -104,14 +90,18 @@ class App extends Component {
     caipyData = [];
     epgData = [];
 
+    fullEpgData = [];
+
     /**
      * Global settings.
      * 
      * @type {Object}
      */
     settings = {
-        zoomWindowSize: Constant.defaultZoomWindowSize,
-        windowInitSize: Constant.defaultWindowInitSize
+        windowSize: Constant.defaultWindowInitSize,
+        startOverDetectAd: Constant.startOverRangeAd,
+        startOverDetectSharpStart: Constant.startOverRangeSharpStart,
+        dropProgram: Constant.cutProgramDuration
     };
 
     constructor() {
@@ -123,8 +113,6 @@ class App extends Component {
         this.setFilterSettings = this.setFilterSettings.bind(this);
         this.setPreset = this.setPreset.bind(this);
         this.setChannel = this.setChannel.bind(this);
-        this.excludeProgram = this.excludeProgram.bind(this);
-        this.excludeProgramStateChange = this.excludeProgramStateChange.bind(this);
         this.updateGlobalSettings = this.updateGlobalSettings.bind(this);
         this.playRolling = this.playRolling.bind(this);
         this.pauseRolling = this.pauseRolling.bind(this);
@@ -179,9 +167,11 @@ class App extends Component {
         this.options.stack = Storage.getStack();
         this.options.type = Storage.getType();
 
-        //cut program
-        this.cutProgramDuration = Storage.getCutProgramDuration();
-        this.cutProgramState = Storage.getCutProgramState();
+        //global settings & startover
+        this.settings.dropProgram = Storage.getCutProgramDuration();
+        this.settings.startOverDetectAd = Storage.getStartOverRangeAd();
+        this.settings.startOverDetectSharpStart = Storage.getStartOverRangeSharpStart();
+        this.settings.windowSize = Storage.getWindowInitSize();
 
         //filter date
         this.date.startDate = Storage.getStartDate();
@@ -189,10 +179,6 @@ class App extends Component {
 
         //mode
         this.mode = Storage.getMode();
-
-        //settings
-        this.settings.windowInitSize = Storage.getWindowInitSize();
-        this.settings.zoomWindowSize = Storage.getZoomWindowSize();
     }
 
     /**
@@ -200,7 +186,7 @@ class App extends Component {
      */
     componentDidMount() {
         this.initChannel();
-        this.refresh("create");
+        this.refresh("create", false);
     }
 
     /**
@@ -208,7 +194,7 @@ class App extends Component {
      * 
      * @param  {String} actionType action to perform
      */
-    updateState(actionType) {
+    updateState(actionType, keepCurrentWindow) {
         this.setState({
             actionType: actionType,
             ready: true,
@@ -220,7 +206,8 @@ class App extends Component {
             url: Storage.getApiUrl(),
             message: "",
             startDate: this.date.startDate,
-            endDate: this.date.endDate
+            endDate: this.date.endDate,
+            keepCurrentWindow: (keepCurrentWindow ? true : false)
         });
     }
 
@@ -229,11 +216,12 @@ class App extends Component {
      * @param  {Object} data       JSON data object (from query response or from local JSON file)
      * @param  {String} actionType type of action to perform ("create","update","idle")
      */
-    parseItems(caipyData, epgData, items, actionType) {
+    parseItems(caipyData, epgData, items, actionType, keepCurrentWindow) {
         this.items = items;
         this.caipyData = caipyData;
         this.epgData = epgData;
-        this.updateState(actionType);
+        this.fullEpgData = JSON.parse(JSON.stringify(epgData));
+        this.updateState(actionType, keepCurrentWindow);
     }
 
     /**
@@ -260,7 +248,7 @@ class App extends Component {
      * Refresh the data according to mode
      * @param  {String} actionType type of action to perform ("create","update","idle")
      */
-    refresh(actionType) {
+    refresh(actionType, keepCurrentWindow) {
         var that = this;
 
         that.setState({
@@ -280,14 +268,14 @@ class App extends Component {
 
         ApiUtils.getData(this.mode,
             this.date.startDate, this.date.endDate,
-            this.cutProgramState, this.cutProgramDuration,
+            this.settings.dropProgram,
             this.preset, this.channel,
             function(err, res) {
                 if (err) {
                     console.log(err);
                     return that.showError();
                 }
-                that.parseItems(res.caipyEvents, res.epgPrograms, res.timelineItems, actionType);
+                that.parseItems(res.caipyEvents, res.epgPrograms, res.timelineItems, actionType, keepCurrentWindow);
             });
     }
 
@@ -300,7 +288,7 @@ class App extends Component {
         Storage.setMode("live");
         this.mode = "live";
         this.initPreset();
-        this.refresh("update");
+        this.refresh("update", false);
     }
 
     /**
@@ -313,7 +301,7 @@ class App extends Component {
         Storage.setEndDate(endDate);
         this.date.startDate = startDate;
         this.date.endDate = endDate;
-        this.refresh("update");
+        this.refresh("update", false);
     }
 
     /**
@@ -324,7 +312,7 @@ class App extends Component {
     setPreset(preset) {
         this.preset = preset;
         Storage.setPreset(preset);
-        this.refresh("update");
+        this.refresh("update", true);
     }
 
     /**
@@ -335,7 +323,7 @@ class App extends Component {
     setChannel(channel) {
         this.channel = channel;
         Storage.setChannel(channel);
-        this.refresh("update");
+        this.refresh("update", true);
     }
 
     /**
@@ -345,32 +333,35 @@ class App extends Component {
     setMode(mode) {
         Storage.setMode(mode);
         this.mode = mode;
-        this.refresh("update");
+        this.refresh("update", false);
     }
 
-    excludeProgram(cutProgramDuration) {
-        this.cutProgramDuration = cutProgramDuration;
-        this.cutProgramState = true;
-        Storage.setCutProgramDuration(this.cutProgramDuration);
-        Storage.setCutProgramState(this.cutProgramState);
-        this.refresh("update");
-    }
+    updateGlobalSettings(settings) {
+        //update options but keep the current window
+        var nextState = "options-timeline";
 
-    excludeProgramStateChange() {
-        this.cutProgramState = false;
-        Storage.setCutProgramState(false);
-        this.refresh("update");
-    }
+        var update = false;
 
-    updateGlobalSettings(zoomWindowSize, windowInitSize) {
-        this.settings = {
-            zoomWindowSize: zoomWindowSize,
-            windowInitSize: windowInitSize
-        };
-        Storage.setWindowInitSize(windowInitSize);
-        Storage.setZoomWindowSize(zoomWindowSize);
+        if (settings.windowSize !== this.settings.windowSize) {
+            //update options and update the window
+            nextState = "options-global";
+        }
+        if (settings.dropProgram !== this.settings.dropProgram) {
+            update = true;
+        }
 
-        this.updateState("options-global");
+        this.settings = JSON.parse(JSON.stringify(settings));
+
+        Storage.setWindowInitSize(settings.windowSize);
+        Storage.setCutProgramDuration(settings.dropProgram);
+        Storage.setStartOverRangeAd(settings.startOverDetectAd);
+        Storage.setStartOverRangeSharpStart(settings.startOverDetectSharpStart);
+
+        if (update) {
+            this.refresh("update", true);
+        } else {
+            this.updateState(nextState);
+        }
     }
 
     playRolling() {
@@ -409,6 +400,7 @@ class App extends Component {
                                    settings={this.settings}
                                    onPlayRolling={this.playRolling}
                                    onPauseRolling={this.pauseRolling}
+                                   keepCurrentWindow={this.state.keepCurrentWindow}
                                    />
 
                     <ProgressView value={this.state.ready}
@@ -418,13 +410,6 @@ class App extends Component {
                                   url={this.state.url}
                                   onSetUrlSettings={this.setUrlSettings}
                                   onSetMode={this.setMode}/>
-
-                    <ProgramSettingsView
-                                  cutProgramDuration={this.cutProgramDuration}
-                                  cutProgramState={this.cutProgramState}
-                                  onExcludeProgram={this.excludeProgram}
-                                  onExcludeStateChange={this.excludeProgramStateChange}
-                                  />
 
                     <GlobalSettingsView 
                                   settings={this.settings}

@@ -1,16 +1,15 @@
-//import constant values
-import * as Constant from '../constants/Constant.js';
-
 /**
  * Compute start over value from the Caipy events & EPG data set.
  * 
- * @param  {Date}   time        current date to calculate the startover from
- * @param  {Object} caipyData   Caipy event data
- * @param  {Object} epgData     EPG data set
- * @param  {String} channel     channel name
- * @return {Object}             startover result with startover field (caipy event item) & program field (epg item)
+ * @param  {Date}   time                       current date to calculate the startover from
+ * @param  {Object} caipyData                  Caipy event data
+ * @param  {Object} epgData                    EPG data set
+ * @param  {String} channel                    channel name
+ * @param  {Number} startOverDetectAd          startover detection settings : time range for looking for ad after start of program
+ * @param  {Number} startOverDetectSharpStart  startover detection settings : time range for looking for a SharpStart before start of program
+ * @return {Object}                            startover result with startover field (caipy event item) & program field (epg item)
  */
-export function computeStartover(time, caipyData, epgData, channel) {
+export function computeStartover(time, caipyData, epgData, channel, startOverDetectAd, startOverDetectSharpStart) {
     var startover = {
         startover: null,
         program: null
@@ -27,7 +26,7 @@ export function computeStartover(time, caipyData, epgData, channel) {
     //X : check program exist at current time
     if (program) {
         startover = {
-            startover: computeCurrentProgram(program, caipyData),
+            startover: computeCurrentProgram(program, caipyData, startOverDetectAd, startOverDetectSharpStart),
             program: program
         };
     } else {
@@ -254,10 +253,11 @@ function searchAdAfterTime(caipyData, lastProgram) {
  * @param  {Object} programStartEvent program start event defining a clip name and index value (index of event at the beginning of the program)
  * @param  {Object} caipyData         caipy event data
  * @param  {Number} programStart      program start time in milliseconds since 1970
+ * @param  {Number} startOverDetectSharpStart  startover detection settings : time range for looking for a SharpStart before start of program
  */
-function searchBeforeProgram(programStartEvent, caipyData, programStart) {
+function searchBeforeProgram(programStartEvent, caipyData, programStart, startOverDetectSharpStart) {
 
-    var sharpStartBeforeProgram = searchSharpStartBeforeProgramStart(programStartEvent, caipyData, programStart, Constant.startOverRange);
+    var sharpStartBeforeProgram = searchSharpStartBeforeProgramStart(programStartEvent, caipyData, programStart, startOverDetectSharpStart);
 
     if (sharpStartBeforeProgram) {
         console.log("[0122] - Found a sharpstart before program start");
@@ -282,8 +282,11 @@ function searchBeforeProgram(programStartEvent, caipyData, programStart) {
  * 
  * @param  {Obect} program   Program object
  * @param  {Obect} caipyData Caipy data
+ * @param  {Number} startOverDetectAd          startover detection settings : time range for looking for ad after start of program
+ * @param  {Number} startOverDetectSharpStart  startover detection settings : time range for looking for a SharpStart before start of program
  */
-function computeCurrentProgram(program, caipyData) {
+function computeCurrentProgram(program, caipyData, startOverDetectAd, startOverDetectSharpStart) {
+
     console.log("[0] - we do have a program");
 
     var programStart = new Date(program.start).getTime();
@@ -296,7 +299,7 @@ function computeCurrentProgram(program, caipyData) {
         console.log("[01] - we do have a sharpStart at the beginning of the program");
 
         // 01X : search for ad after program start
-        var adAfterProgram = searchAdAfterProgramStart(programStartEvent, caipyData, programStart, Constant.startOverRange);
+        var adAfterProgram = searchAdAfterProgramStart(programStartEvent, caipyData, programStart, startOverDetectAd);
 
         if (adAfterProgram) {
             console.log("[011] - Found an ad after program start");
@@ -304,11 +307,11 @@ function computeCurrentProgram(program, caipyData) {
             return adAfterProgram;
         } else {
             console.log("[012] - Didn't found ad after program start");
-            return searchBeforeProgram(programStartEvent, caipyData, programStart);
+            return searchBeforeProgram(programStartEvent, caipyData, programStart, startOverDetectSharpStart);
         }
     } else if (programStartEvent.index !== -1) {
         console.log("[02] - we do have an ad or no event at all at the beginning of the program");
-        return searchBeforeProgram(programStartEvent, caipyData, programStart);
+        return searchBeforeProgram(programStartEvent, caipyData, programStart, startOverDetectSharpStart);
     } else {
         console.log("no event have been found at program start");
         return null;

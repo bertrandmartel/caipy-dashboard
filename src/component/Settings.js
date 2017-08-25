@@ -2,10 +2,14 @@
 import React, { Component } from 'react';
 
 //react components
-import { Modal, Button, Input, Row } from 'react-materialize';
+import { Modal, Button, Input, Row, Col, Section } from 'react-materialize';
 
 //import constant values
 import * as Constant from '../constants/Constant.js';
+
+import * as ApiUtils from '../api/CaipyApi.js';
+
+import NumericInput from 'react-numeric-input';
 
 // jquery
 import $ from 'jquery';
@@ -19,16 +23,6 @@ window.$ = window.jQuery = require('jquery');
  */
 function isValidUrl(str) {
     return /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!-/]))?/.test(str);
-}
-
-/**
- * Check if string evaluates to a positive number
- * 
- * @param  {String}  str input data
- * @return {Boolean}     true if input validated
- */
-function isValidPositiveNumber(str) {
-    return !isNaN(parseFloat(str)) && isFinite(str) && (parseInt(str, 10) > 0);
 }
 
 /**
@@ -120,109 +114,6 @@ export class UrlSettingsView extends Component {
     }
 }
 
-
-/**
- * Exclude TV program based on duration settings view
- */
-export class ProgramSettingsView extends Component {
-
-    /**
-     * State holding the error message
-     * @type {Object}
-     */
-    state = {
-        message: ""
-    }
-
-    constructor() {
-        super();
-        this.cutProgram = this.cutProgram.bind(this);
-    }
-
-    close() {
-        this.setState({
-            message: ""
-        });
-        $('#cut-program-settings').modal('close');
-    }
-
-    /**
-     * Set the exclude duration value and/or the exclude state value
-     * 
-     */
-    cutProgram() {
-        if (this.refs.excludeState.state.value !== '0') {
-            if (isValidPositiveNumber(this.refs.excludeDuration.state.value)) {
-                if (typeof this.props.onExcludeProgram === 'function') {
-                    this.close();
-                    this.props.onExcludeProgram(this.refs.excludeDuration.state.value);
-                }
-            } else {
-                this.setState({
-                    message: "you must type a valid number"
-                })
-            }
-        } else {
-            if (typeof this.props.onExcludeStateChange === 'function') {
-                this.close();
-                this.props.onExcludeStateChange();
-            }
-        }
-    }
-
-    /**
-     * Handle exclude state switch state (checkbox change)
-     * 
-     * @param  {Object} e     event
-     * @param  {[type]} value checkbox value ('0' if false , true for true)
-     */
-    handleExcludeStateChange(e, value) {
-        if (value !== '0') {
-            $('#excludeDuration').prop("disabled", false);
-        } else {
-            $('#excludeDuration').prop("disabled", true);
-        }
-    }
-
-    /**
-     * Handle the enter key
-     * 
-     * @param  {Object} e event
-     */
-    handleKeyPress(e) {
-        if (e.key === 'Enter') {
-            this.cutProgram();
-        }
-    }
-
-    render() {
-        $('#cutState').prop('checked', this.props.cutProgramState);
-
-        if (!this.props.cutProgramState) {
-            $('#excludeDuration').prop("disabled", true);
-        }
-        return <Modal
-                    id="cut-program-settings"
-                    header='Exclude TV program by duration'
-                    actions={
-                        <div>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.cutProgram()}>OK</Button>   
-                            <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>
-                        </div>
-                    }
-                    >
-                    <p>This will exclude all TV programs that last less than the specified value (in seconds)</p>
-                    <Row>
-                        <Input ref="excludeDuration" id="excludeDuration" placeholder="Enter a duration in seconds" s={3} defaultValue={this.props.cutProgramDuration} onKeyPress={(e) => this.handleKeyPress(e)}/>
-                        <Input ref="excludeState" id='cutState' onChange={(e,value)=>this.handleExcludeStateChange(e,value)} name='on' s={6} type='switch' value='0'/>
-                    </Row>
-                    <Row className="error-message form-error">
-                        <p>{this.state.message}</p>
-                    </Row>
-                </Modal>
-    }
-}
-
 /**
  * Open Global settings view
  */
@@ -233,24 +124,33 @@ export class GlobalSettingsView extends Component {
      * @type {Object}
      */
     state = {
-        message: "",
-        zoomCheck: false,
-        windowCheck: false,
-        zoomAutoFocus: false,
-        windowAutoFocus: false
-    }
+        data: {
+            windowSize: 0,
+            startOverDetectAd: 0,
+            startOverDetectSharpStart: 0,
+            dropProgram: 0
+        },
+        style: {
+            windowSize: {},
+            startoverAd: {},
+            startoverSharpStart: {},
+            dropProgram: {}
 
-    overrideZoomWindowSize = -1;
-    overrideInitWindowSize = -1;
+        }
+    };
 
-    tempSettings = {
-        zoomWindowSize: 0,
-        initWindowSize: 0
+    data = {
+        windowSize: 0,
+        startOverDetectAd: 0,
+        startOverDetectSharpStart: 0,
+        dropProgram: 0
     };
 
     constructor() {
         super();
         this.validateSettings = this.validateSettings.bind(this);
+        this.updateDurationValue = this.updateDurationValue.bind(this);
+        this.onValueChange = this.onValueChange.bind(this);
     }
 
     close() {
@@ -260,25 +160,39 @@ export class GlobalSettingsView extends Component {
         $('#global-settings').modal('close');
     }
 
+    componentDidMount() {
+
+        this.data = {
+            windowSize: this.props.settings.windowSize,
+            startOverDetectAd: this.props.settings.startOverDetectAd,
+            startOverDetectSharpStart: this.props.settings.startOverDetectSharpStart,
+            dropProgram: this.props.settings.dropProgram
+        };
+
+        this.setState({
+            data: {
+                windowSize: this.props.settings.windowSize,
+                startOverDetectAd: this.props.settings.startOverDetectAd,
+                startOverDetectSharpStart: this.props.settings.startOverDetectSharpStart,
+                dropProgram: this.props.settings.dropProgram
+            },
+            style: {
+                windowSize: {},
+                startOverDetectAd: {},
+                startOverDetectSharpStart: {},
+                dropProgram: {}
+            }
+        });
+    }
+
     /**
      * Validate the settings input.
      * 
      */
     validateSettings() {
-        if (isValidPositiveNumber(this.refs.zoomWindowSize.state.value) &&
-            isValidPositiveNumber(this.refs.initWindowSize.state.value)) {
-
-            if (typeof this.props.onGlobalSettings === 'function') {
-                this.close();
-                this.props.onGlobalSettings(
-                    parseInt(this.refs.zoomWindowSize.state.value, 10),
-                    parseInt(this.refs.initWindowSize.state.value, 10)
-                );
-            }
-        } else {
-            this.setState({
-                message: "you must type a valid number"
-            })
+        if (typeof this.props.onGlobalSettings === 'function') {
+            this.close();
+            this.props.onGlobalSettings(this.data);
         }
     }
 
@@ -293,105 +207,24 @@ export class GlobalSettingsView extends Component {
         }
     }
 
-    /**
-     * Set default value for zoom window
-     * 
-     * @param  {Object} e     event
-     * @param  {[type]} value check value
-     */
-    handleDefaultZoomValue(e, value) {
-        //keep other field intact
-        this.overrideInitWindowSize = this.refs.initWindowSize.state.value;
+    resetSettings() {
+        var windowSize = ApiUtils.convertMillisToDuration(Constant.defaultWindowInitSize);
+        var startOverDetectAd = ApiUtils.convertMillisToDuration(Constant.startOverRangeAd);
+        var startOverDetectSharpStart = ApiUtils.convertMillisToDuration(Constant.startOverRangeSharpStart);
+        var dropProgram = ApiUtils.convertMillisToDuration(Constant.cutProgramDuration);
 
-        if (value === true) {
-            this.tempSettings.zoomWindowSize = this.refs.zoomWindowSize.state.value;
-            this.overrideZoomWindowSize = Constant.defaultZoomWindowSize;
-            this.setState({
-                load: 1,
-                zoomCheck: 'true',
-                zoomAutoFocus: false,
-                windowAutoFocus: false
-            });
-        } else {
-            this.overrideZoomWindowSize = this.tempSettings.zoomWindowSize;
-            this.setState({
-                load: 1,
-                zoomCheck: '',
-                zoomAutoFocus: false,
-                windowAutoFocus: false
-            });
-        }
-    }
+        var resp = this.state;
+        resp.data.windowSize = windowSize;
+        resp.data.startOverDetectAd = startOverDetectAd;
+        resp.data.startOverDetectSharpStart = startOverDetectSharpStart;
+        resp.data.dropProgram = dropProgram;
 
-    /**
-     * Set default value for init window size
-     * 
-     * @param  {Object} e     event
-     * @param  {[type]} value check value
-     */
-    handleDefaultWindowSizeValue(e, value) {
-        //keep other field intact
-        this.overrideZoomWindowSize = this.refs.zoomWindowSize.state.value;
+        this.data["windowSize"] = Constant.defaultWindowInitSize;
+        this.data["startOverDetectAd"] = Constant.startOverRangeAd;
+        this.data["startOverDetectSharpStart"] = Constant.startOverRangeSharpStart;
+        this.data["dropProgram"] = Constant.cutProgramDuration;
 
-        if (value === true) {
-            this.tempSettings.initWindowSize = this.refs.initWindowSize.state.value;
-            this.overrideInitWindowSize = Constant.defaultWindowInitSize;
-            this.setState({
-                load: 1,
-                windowCheck: 'true',
-                zoomAutoFocus: false,
-                windowAutoFocus: false
-            });
-        } else {
-            this.overrideInitWindowSize = this.tempSettings.initWindowSize;
-            this.setState({
-                load: 1,
-                windowCheck: '',
-                zoomAutoFocus: false,
-                windowAutoFocus: false
-            });
-        }
-    }
-
-    /**
-     * Handle input change to clear the default checkbox
-     * 
-     * @param  {Obect} e     event
-     * @param  {[type]} value [description]
-     * @param  {String} name    input name
-     */
-    handleInputChange(e, value, name) {
-
-        switch (name) {
-            case 'zoomCheck':
-                this.overrideZoomWindowSize = value;
-                this.overrideInitWindowSize = this.refs.initWindowSize.state.value;
-                if (this.refs.zoomCheck.state.value === true) {
-                    this.refs.zoomCheck.state.value = 'default';
-                    this.setState({
-                        zoomCheck: '',
-                        zoomAutoFocus: true,
-                        windowCheck: this.state.windowCheck,
-                        windowAutoFocus: false
-                    });
-                }
-                break;
-            case 'windowCheck':
-                this.overrideInitWindowSize = value;
-                this.overrideZoomWindowSize = this.refs.zoomWindowSize.state.value;
-                if (this.refs.windowCheck.state.value === true) {
-                    this.refs.windowCheck.state.value = 'default';
-                    this.setState({
-                        zoomCheck: this.state.zoomCheck,
-                        zoomAutoFocus: false,
-                        windowCheck: '',
-                        windowAutoFocus: true
-                    });
-                }
-                break;
-            default:
-                break;
-        }
+        this.setState(resp);
     }
 
     focusText(e) {
@@ -400,36 +233,302 @@ export class GlobalSettingsView extends Component {
         e.target.value = tmp
     }
 
-    render() {
-        var zoomWindowValue = "" + ((this.overrideZoomWindowSize !== -1) ? this.overrideZoomWindowSize : this.props.settings.zoomWindowSize);
-        var initWindowValue = "" + ((this.overrideInitWindowSize !== -1) ? this.overrideInitWindowSize : this.props.settings.windowInitSize);
+    /**
+     * This is called when data change in Duration view
+     * 
+     * @param  {String} type  name of the duration view that is calling the function
+     * @param  {Object} data  duration data (hour,minutes,seconds)
+     * @return {[type]}      [description]
+     */
+    onValueChange(type, data) {
+        this.data[type] = ApiUtils.convertHmdToMillis(data);
+    }
 
-        this.overrideZoomWindowSize = -1;
-        this.overrideInitWindowSize = -1;
+    /**
+     * This is called by Duration view to deal with focus & data update
+     * 
+     * @param  {String} type  name of the duration view that is calling the function
+     * @param  {Object} data state data from the Duration view that contain duration data + style
+     */
+    updateDurationValue(type, data) {
+        var resp = this.state;
+        resp.data[type] = {
+            hour: data.data.hour,
+            minutes: data.data.minutes,
+            seconds: data.data.seconds
+        };
+        resp.style[type] = data.style;
+        this.setState(resp);
+    }
+
+    render() {
+        var windowSize = ApiUtils.convertMillisToDuration(this.state.data.windowSize);
+        var startOverDetectAd = ApiUtils.convertMillisToDuration(this.state.data.startOverDetectAd);
+        var startOverDetectSharpStart = ApiUtils.convertMillisToDuration(this.state.data.startOverDetectSharpStart);
+        var dropProgram = ApiUtils.convertMillisToDuration(this.state.data.dropProgram);
 
         return <Modal
                     id="global-settings"
-                    header='Global Settings'
+                    header='Settings'
                     actions={
-                        <div>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.validateSettings()}>OK</Button>   
+                        <div className="settings-validation-form">
+                            <Button className="blue darken-1" waves='light' onClick={() => this.validateSettings()}>OK</Button> 
+                            <Button className="blue darken-1" waves='light' onClick={() => this.resetSettings()}>Reset to default</Button>   
                             <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>
                         </div>
                     }
                     >
-                    <Row>
-                        <Input autoFocus={this.state.zoomAutoFocus} onFocus={this.focusText} key={'zoomWindowSize' + zoomWindowValue + this.tempSettings.zoomWindowSize} label="zoom window size (in seconds)" ref="zoomWindowSize" onChange={(e,value)=>this.handleInputChange(e,value,'zoomCheck')} placeholder="Enter a value in seconds" s={6} defaultValue={zoomWindowValue} onKeyPress={(e) => this.handleKeyPress(e)}/>
-                        <Input className="filled-in" checked={this.state.zoomCheck} ref="zoomCheck" name='zoomCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultZoomValue(e,value)} s={6}/>
-                    </Row>
-                    <div className="form-modal">
-                        <Row>
-                            <Input autoFocus={this.state.windowAutoFocus} onFocus={this.focusText} key={'initWindowSize' + initWindowValue + this.tempSettings.initWindowSize} label="init window size (in seconds)" ref="initWindowSize" onChange={(e,value)=>this.handleInputChange(e,value,'windowCheck')} placeholder="Enter a value in seconds" s={6} defaultValue={initWindowValue} onKeyPress={(e) => this.handleKeyPress(e)}/>
-                            <Input className="filled-in" checked={this.state.windowCheck} ref="windowCheck"  name='windowCheck' type='checkbox' value='default' label='default' onChange={(e,value)=>this.handleDefaultWindowSizeValue(e,value)} s={6}/>
-                        </Row>
-                    </div>
-                    <Row className="error-message form-error">
-                        <p>{this.state.message}</p>
-                    </Row>
+                        <div>
+                            <Section>
+                                <h5>General</h5>
+                                <Row className="top-section">
+                                    <Col s={4} className='duration-picker-label' >Timeline window</Col>
+                                    <Col s={8} className='duration-picker-container' >
+                                        <DurationPicker 
+                                            className='duration-picker'
+                                            style={this.state.style.windowSize}
+                                            name='windowSize'
+                                            hour={windowSize.hour} 
+                                            minutes={windowSize.minutes} 
+                                            seconds={windowSize.seconds}
+                                            onChange={this.onValueChange}
+                                            onUpdateValue={this.updateDurationValue}
+                                        />
+                                    </Col>
+                                </Row>
+                            </Section>
+                            
+                            <Section>
+                                <h5>Start Over</h5>
+                                <Row className="top-section">
+                                    <Col s={4} className='duration-picker-label' >Detect Ad after</Col>
+                                    <Col s={8} className='duration-picker-container' >
+                                        <DurationPicker className='duration-picker' 
+                                            name='startOverDetectAd'
+                                            style={this.state.style.startOverDetectAd}
+                                            hour={startOverDetectAd.hour} 
+                                            minutes={startOverDetectAd.minutes} 
+                                            seconds={startOverDetectAd.seconds}
+                                            onChange={this.onValueChange}
+                                            onUpdateValue={this.updateDurationValue}
+                                        />
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col s={4} className='duration-picker-label' >Detect SharpStart before</Col>
+                                    <Col s={8} className='duration-picker-container' >
+                                        <DurationPicker className='duration-picker' 
+                                            name='startOverDetectSharpStart' 
+                                            style={this.state.style.startOverDetectSharpStart}
+                                            hour={startOverDetectSharpStart.hour} 
+                                            minutes={startOverDetectSharpStart.minutes} 
+                                            seconds={startOverDetectSharpStart.seconds}
+                                            onChange={this.onValueChange}
+                                            onUpdateValue={this.updateDurationValue}
+                                        />
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col s={4} className='duration-picker-label' >Drop program lower than </Col>
+                                    <Col s={8} className='duration-picker-container' >
+                                        <DurationPicker className='duration-picker' 
+                                            name='dropProgram' 
+                                            style={this.state.style.dropProgram}
+                                            hour={dropProgram.hour} 
+                                            minutes={dropProgram.minutes} 
+                                            seconds={dropProgram.seconds}
+                                            onChange={this.onValueChange}
+                                            onUpdateValue={this.updateDurationValue}
+                                        />
+                                    </Col>
+                                </Row>
+                            </Section>
+                        </div>
                 </Modal>
+    }
+}
+
+/**
+ * Duration picker view
+ */
+export class DurationPicker extends Component {
+
+    style = {};
+
+    state = {
+        style: {
+            hour: {},
+            minutes: {},
+            seconds: {}
+        },
+        data: {
+            hour: 0,
+            minutes: 0,
+            seconds: 0
+        }
+    };
+
+    selection = false;
+
+    constructor() {
+        super();
+        var durationstyle = Constant.numericInputStyle;
+
+        //hide arrows
+        durationstyle["btn"].visibility = "hidden";
+
+        //highlight when focused
+        durationstyle["input:focus"] = {
+            "border": "1px solid #1e88e5"
+        };
+
+        //modify margin
+        durationstyle["input"] = {
+            "margin": "5px",
+            "paddingRight": '3ex',
+            "boxSizing": 'border-box'
+        };
+        durationstyle["btnUp"] = {
+            top: 2,
+            bottom: '50%',
+            borderRadius: '2px 2px 0 0',
+            borderWidth: '1px 1px 0 1px',
+            marginTop: '4px',
+            marginRight: '4px'
+        };
+        durationstyle["btnDown"] = {
+            top: '50%',
+            bottom: 2,
+            borderRadius: '0 0 2px 2px',
+            borderWidth: '0 1px 1px 1px',
+            marginBottom: '4px',
+            marginRight: '4px'
+        }
+        this.style = {
+            hour: JSON.parse(JSON.stringify(durationstyle)),
+            minutes: JSON.parse(JSON.stringify(durationstyle)),
+            seconds: JSON.parse(JSON.stringify(durationstyle))
+        };
+        this.onFocus = this.onFocus.bind(this);
+        this.onBlur = this.onBlur.bind(this);
+    }
+
+    componentDidMount() {
+        if (this.props.style && Object.keys(this.props.style).length !== 0) {
+            this.style = this.props.style;
+        }
+        this.setState({
+            style: this.style,
+            data: {
+                hour: this.props.hour,
+                minutes: this.props.minutes,
+                seconds: this.props.seconds
+            }
+        });
+    }
+
+    componentDidUpdate() {
+
+    }
+
+    onFocus(type) {
+        if (!this.selection) {
+            this.selection = true;
+            switch (type) {
+                case 'hour':
+                    this.style.hour["btn"].visibility = "visible";
+                    break;
+                case 'minutes':
+                    this.style.minutes["btn"].visibility = "visible";
+                    break;
+                case 'seconds':
+                    this.style.seconds["btn"].visibility = "visible";
+                    break;
+                default:
+                    break;
+            }
+            if (typeof this.props.onUpdateValue === 'function') {
+                this.props.onUpdateValue(this.props.name, {
+                    style: this.style,
+                    data: {
+                        hour: this.props.hour,
+                        minutes: this.props.minutes,
+                        seconds: this.props.seconds
+                    }
+                });
+            }
+        }
+    }
+
+    onBlur(type) {
+        this.selection = false;
+        switch (type) {
+            case 'hour':
+                this.style.hour["btn"].visibility = "hidden";
+                break;
+            case 'minutes':
+                this.style.minutes["btn"].visibility = "hidden";
+                break;
+            case 'seconds':
+                this.style.seconds["btn"].visibility = "hidden";
+                break;
+            default:
+                break;
+        }
+        if (typeof this.props.onUpdateValue === 'function') {
+            this.props.onUpdateValue(this.props.name, {
+                style: this.style,
+                data: {
+                    hour: this.refs.hour.state.value,
+                    minutes: this.refs.minutes.state.value,
+                    seconds: this.refs.seconds.state.value
+                }
+            });
+        }
+    }
+
+    onChange(valueAsNumber, valueAsString, input) {
+        if (typeof this.props.onChange === 'function') {
+            this.props.onChange(this.props.name, {
+                hour: this.refs.hour.state.value,
+                minutes: this.refs.minutes.state.value,
+                seconds: this.refs.seconds.state.value
+            });
+        }
+    }
+
+    render() {
+        return <div className={this.props.className + " durationpicker-container form-control"}>
+                    <NumericInput 
+                        ref='hour' 
+                        onBlur={() => this.onBlur('hour')} 
+                        onSelect={() => this.onFocus('hour')} 
+                        min={0} 
+                        max={24} 
+                        value={this.props.hour} 
+                        style={this.state.style.hour}
+                        onChange={(numericVal,strVal,input) => this.onChange(numericVal,strVal,input) }
+                    />h
+                    <NumericInput 
+                        ref='minutes' 
+                        onBlur={() => this.onBlur('minutes')} 
+                        onSelect={() => this.onFocus('minutes')} 
+                        min={0} 
+                        max={60} 
+                        value={this.props.minutes} 
+                        style={this.state.style.minutes}
+                        onChange={(numericVal,strVal,input) => this.onChange(numericVal,strVal,input)}
+                    />m
+                    <NumericInput 
+                        ref='seconds' 
+                        onBlur={() => this.onBlur('seconds')} 
+                        onSelect={() => this.onFocus('seconds')} 
+                        min={0} 
+                        max={60} 
+                        value={this.props.seconds} 
+                        style={this.state.style.seconds}
+                        onChange={(numericVal,strVal,input) => this.onChange(numericVal,strVal,input)}
+                    />s
+               </div>
     }
 }

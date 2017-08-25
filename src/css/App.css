@@ -1,13 +1,65 @@
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 
+#global-settings {
+    width:40%;
+}
+
+#global-settings h5 {
+    margin-top:0px;
+}
+
+.top-section {
+    margin-top: 15px;
+}
+
+.durationpicker-container {
+    background-color: white;
+    border: 1px solid darkgrey;
+    display: inline-block;
+    width: auto;
+    margin-bottom: 20px;
+}
+
+.form-control {
+    height: 44px;
+    padding: 0px 20px 6px 0px;
+    font-size: 14px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.duration-picker-label {
+    margin-top: 13px;
+    text-align: left;
+}
+
+.modal .react-numeric-input input[type=text]:focus:not([readonly]) {
+    border: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+
+.react-numeric-input input:focus {
+    border: none;
+}
+
+.react-numeric-input input {
+    text-align: right;
+    border: none;
+    height: 34px;
+    width: 60px;
+    cursor: auto;
+}
+
 .coll-item {
     position: relative;
 }
 
 .tools {
-    margin-left:10px;
-    padding-left:15px;
-    padding-right:15px;
+    margin-left: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 .pull-right {
@@ -16,48 +68,56 @@
     top: 25px;
 }
 
+
+
 /* for global settings form - for 2 form lines with 6-6 in modal*/
+
 .form-modal {
     margin-top: 100px;
 }
 
-/* checbox rectify placement next to input in global settings modal*/
-[type="checkbox"]+label{
-    padding-top: 40px;
-    margin-left: 25px;
-}
+
 
 /* style of error message in modal*/
+
 .form-error {
     padding-top: 10px;
 }
 
-[type="checkbox"].filled-in+label:before, [type="checkbox"].filled-in+label:after{
-    margin-top:40px;
-}
 
-[type="checkbox"]:checked+label:before,
-[type="checkbox"].filled-in:checked+label:before{
-    top:2px;
-}
+
+
 
 /*rectify switch placement in cut program modal*/
+
 .switch {
     padding-top: 5px;
     margin-left: 25px;
 }
 
+
+
+
 /* padding for materialize collecton item*/
+
 .collection .collection-item {
     padding-bottom: 5px;
 }
 
+
+
+
 /*remove the content after to gain space*/
+
 .row:after {
     content: normal;
 }
 
+
+
+
 /* filter button class to enable placement between input*/
+
 .filter-btn {
     padding: 0px 2rem 0px 2rem;
     margin: 1rem 1rem 0px 1rem;
@@ -67,7 +127,11 @@
     heigth: 30%;
 }
 
+
+
+
 /*style for error message when failing to retrieve API data*/
+
 .error-message {
     color: red;
 }
@@ -129,7 +193,11 @@ div .modal .modal-footer .btn {
     padding-right: 35px;
 }
 
+
+
+
 /*used for hidden object*/
+
 .hidden {
     display: none;
 }
@@ -142,7 +210,11 @@ div .modal .modal-footer .btn {
     padding-bottom: 0px;
 }
 
+
+
+
 /* progress bar div to be center vertically/horizontally on screen*/
+
 .center-div {
     position: absolute;
     left: 50%;
@@ -151,7 +223,11 @@ div .modal .modal-footer .btn {
     transform: translate(-50%, -50%);
 }
 
+
+
+
 /*channel title of timeline*/
+
 .title {
     margin: 20px;
 }

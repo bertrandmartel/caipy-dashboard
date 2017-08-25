@@ -65,6 +65,7 @@ export class TabCollection extends Component {
                                                       settings={this.props.settings}
                                                       onPlayRolling={this.playRolling}
                                                       onPauseRolling={this.pauseRolling}
+                                                      keepCurrentWindow={this.props.keepCurrentWindow}
                                                       />
                                         </CollectionItem>
                                     </Collection>

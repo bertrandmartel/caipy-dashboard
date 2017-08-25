@@ -19,14 +19,7 @@ export class TopNavbar extends Component {
     urlSettings() {
         $('#url-settings').modal('open');
     }
-
-    /**
-     * Open URL settings modal
-     */
-    removeProgram() {
-        $('#cut-program-settings').modal('open');
-    }
-
+    
     /**
      * Open Global settings modal
      */
@@ -46,7 +39,6 @@ export class TopNavbar extends Component {
 
     render() {
         return <Navbar href={process.env.PUBLIC_URL} brand='Caipy Dashboard' className="blue darken-1" right>
-                    <NavItem onClick={() => this.removeProgram()}><Icon medium>content_cut</Icon></NavItem>
                     <NavItem onClick={() => this.globalSettings()}><Icon medium>settings</Icon></NavItem>
                     <NavItem onClick={() => this.urlSettings()}><Chip close={false}>{this.props.mode} mode</Chip></NavItem> 
                     <NavItem href="https://github.com/bertrandmartel/caipy-dashboard" target="_blank" ><Icon>code</Icon></NavItem>

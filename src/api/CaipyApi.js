@@ -10,12 +10,11 @@ require("moment-duration-format");
  * @param  {String}   mode               app mode (demo or live)
  * @param  {String}   startDate          start date in DD/MM/YYYY
  * @param  {String}   endDate            end date in DD/MM/YYYY
- * @param  {bool}     cutProgramState    state of cut program feature
  * @param  {Number}   cutProgramDuration all program with less than the specified duration in sec will be removed
  * @param  {String}   preset             preset value determining how the data will be aggregated from the remote Caipy API
  * @param  {Function} cb                 Callback function
  */
-export function getData(mode, startDate, endDate, cutProgramState, cutProgramDuration, preset, channel, cb) {
+export function getData(mode, startDate, endDate, cutProgramDuration, preset, channel, cb) {
 
     startDate += "00:00:00";
     endDate += "23:59:59";
@@ -26,7 +25,7 @@ export function getData(mode, startDate, endDate, cutProgramState, cutProgramDur
     if (mode === "live") {
 
         //get channel list
-        getPrograms(Storage.getApiUrl(), channel, startDate, endDate, cutProgramState, cutProgramDuration, function(err, programRes, epgData) {
+        getPrograms(Storage.getApiUrl(), channel, startDate, endDate, cutProgramDuration, function(err, programRes, epgData) {
             if (err) {
                 return cb(err, null);
             }
@@ -47,14 +46,10 @@ export function getData(mode, startDate, endDate, cutProgramState, cutProgramDur
         var data = require('./demo-config/demo-data.json');
         var channels = require('./demo-config/demo-tf1.json');
 
-        var epgResult = getDemoProgram(channels, cutProgramState, cutProgramDuration);
+        var epgResult = getDemoProgram(channels, cutProgramDuration);
         var caipyResult = getDemoEvents(data, epgResult.channels);
 
         var items = buildChannelMap(startDate, endDate, caipyResult.channels, epgResult.programs.name);
-
-        console.log(items);
-        console.log(caipyResult);
-        console.log(epgResult);
 
         cb(null, {
             caipyEvents: caipyResult.caipy,
@@ -96,11 +91,10 @@ function initGroups() {
  * @param  {String}   url         Caipy API URL
  * @param  {String}   startDate   start date in DD/MM/YYYY format
  * @param  {String}   stopDate    endDate in DD/MM/YYYY format
- * @param  {bool}     cutState    state of cut program feature (enabled/disabled)
  * @param  {Number}   cutDuration cut program duration
  * @param  {Function} cb          Callback
  */
-export function getPrograms(url, channel, startDate, stopDate, cutState, cutDuration, cb) {
+export function getPrograms(url, channel, startDate, stopDate, cutDuration, cb) {
 
     var programData = { "name": channel };
 
@@ -125,9 +119,9 @@ export function getPrograms(url, channel, startDate, stopDate, cutState, cutDura
                 var dateStart = new Date(data.events[j].start);
                 var dateEnd = new Date(data.events[j].end);
 
-                var durationDiff = parseInt(moment.duration(dateEnd.getTime() - dateStart.getTime()).format('s'), 10);
+                var durationDiff = parseInt(moment.duration(dateEnd.getTime() - dateStart.getTime()).format('s'), 10) * 1000;
 
-                if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
+                if (cutDuration > 0 && (durationDiff <= cutDuration)) {
                     data.events.splice(j, 1);
                 } else {
                     var duration = moment.duration(dateEnd.getTime() - dateStart.getTime()).format('hh[h]mm[m]ss[s]');
@@ -159,7 +153,7 @@ export function getPrograms(url, channel, startDate, stopDate, cutState, cutDura
  * @param  {Array} channels Array of channels
  * @return {Object}          an object that enclose the epg data set + the channel list generated
  */
-export function getDemoProgram(channels, cutState, cutDuration) {
+export function getDemoProgram(channels, cutDuration) {
     var programData = {
         "name": channels.tvin_name,
         rows: channels.events
@@ -173,9 +167,9 @@ export function getDemoProgram(channels, cutState, cutDuration) {
         var start = channels.events[j].start;
         var end = channels.events[j].end;
 
-        var durationDiff = parseInt(moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('s'), 10);
+        var durationDiff = parseInt(moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('s'), 10) * 1000;
 
-        if (cutState && cutDuration > 0 && (durationDiff <= cutDuration)) {
+        if (cutDuration > 0 && (durationDiff <= cutDuration)) {
             channels.events.splice(j, 1);
         } else {
             var duration = moment.duration(new Date(end).getTime() - new Date(start).getTime()).format('hh[h]mm[m]ss[s]');
@@ -410,4 +404,29 @@ export function getChannels(url, startDate, cb) {
         .catch(function(err) {
             cb(err, null);
         });
+}
+
+/**
+ * Convert milliseconds to duration object
+ * 
+ * @param  {Number} millis duration in milliseconds
+ * @return {Object}        duration object
+ */
+export function convertMillisToDuration(millis) {
+    var duration = moment.duration(millis);
+    return {
+        hour: duration.hours(),
+        minutes: duration.minutes(),
+        seconds: duration.seconds()
+    };
+}
+
+/**
+ * Convert duration to milliseconds
+ * 
+ * @param  {Object} duration duration object
+ * @return {Number}          duration in milliseconds
+ */
+export function convertHmdToMillis(duration) {
+    return (duration.hour * 60 * 60 * 1000 + duration.minutes * 60 * 1000 + duration.seconds * 1000);
 }

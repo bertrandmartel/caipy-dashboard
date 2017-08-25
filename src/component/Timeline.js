@@ -88,10 +88,12 @@ export class TimelineContainer extends Component {
             case "options-timeline":
                 var options = this.getOptions(this.timeline.getWindow(), this.props.options);
                 this.timeline.setOptions(options);
+                this.computeStartOver();
                 break;
             case "options-global":
                 options = this.getOptions(this.getWindow(this.props.data.items), this.props.options);
                 this.timeline.setOptions(options);
+                this.computeStartOver();
                 break;
             case "update":
                 this.updateData(this.props, false);
@@ -117,7 +119,7 @@ export class TimelineContainer extends Component {
         var diff = maxDate.getTime() - minDate.getTime();
 
         var windowStart = new Date(minDate.getTime() + diff / 2);
-        var windowEnd = new Date(windowStart.getTime() + this.props.settings.windowInitSize);
+        var windowEnd = new Date(windowStart.getTime() + this.props.settings.windowSize);
 
         return {
             start: windowStart,
@@ -142,7 +144,13 @@ export class TimelineContainer extends Component {
      * Compute start over and replace the current startover item.
      */
     computeStartOver() {
-        var startOver = StartOver.computeStartover(this.currentTime, this.props.caipyData, this.props.epgData, this.props.channel);
+
+        var startOver = StartOver.computeStartover(this.currentTime,
+            this.props.caipyData,
+            this.props.epgData,
+            this.props.channel,
+            this.props.settings.startOverDetectAd,
+            this.props.settings.startOverDetectSharpStart);
 
         this.timeline.itemSet.itemsData.remove(startOverId);
 
@@ -308,7 +316,13 @@ export class TimelineContainer extends Component {
         this.date.start = config.data.start;
         this.date.stop = config.data.stop;
 
-        var window = this.getWindow(config.data.items);
+        var window;
+
+        if (!this.props.keepCurrentWindow) {
+            window = this.getWindow(config.data.items);
+        } else {
+            window = this.timeline.getWindow();
+        }
 
         var options = this.getOptions(window, config.options);
 
@@ -322,7 +336,11 @@ export class TimelineContainer extends Component {
         }
         this.timeline.setGroups(config.data.groups);
         this.timeline.setItems(config.data.items);
-        this.createCustomTime(window);
+        if (!this.props.keepCurrentWindow) {
+            this.createCustomTime(window);
+        } else {
+            this.computeStartOver();
+        }
     }
 
     render() {
