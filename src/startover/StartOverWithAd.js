@@ -118,7 +118,7 @@ export const startOverState = {
     "no_event_at_program_start": {
         code: 'op6',
         mask: 0x00400,
-        text: 'startover = EPG program start',
+        text: 'startover = EPG program start (Caipy fail)',
         type: 'end',
         params: ''
     },

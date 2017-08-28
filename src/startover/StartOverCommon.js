@@ -132,20 +132,27 @@ export function buildChartCode(stateTemplate, chartCode, state) {
  * @return {String} event type (clip name)
  */
 export function searchProgramStartEvent(caipyData, programStart) {
+
+    var current;
+
     for (var i = 0; i < caipyData.length; i++) {
         var startTime = new Date(caipyData[i].time).getTime();
         var endTime = startTime + caipyData[i].duration * 1000;
 
-        if (programStart >= startTime && programStart < endTime) {
-            return {
+        if (endTime >= programStart) {
+            current = {
                 clip: caipyData[i].clip,
                 index: i
             };
-        } else if (programStart > endTime) {
-            return {
-                clip: "",
-                index: -1
-            };
+        } else {
+            if (current) {
+                return current
+            } else {
+                return {
+                    clip: "",
+                    index: -1
+                };
+            }
         }
     }
     return {

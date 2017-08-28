@@ -250,7 +250,7 @@ export function getCaipyData(url, channelName, startDate, stopDate, preset, chan
                 var duration = moment.duration(data.markers[j].duration * 1000).format('hh[h]mm[m]ss[s]');
 
                 var tooltip = 'title : ' + data.markers[j].clip + '<br/>' +
-                    'time  : ' + moment(dateStart).format("HH:mm") + '-' + moment(dateEnd).format("HH:mm") + '<br/>' +
+                    'time  : ' + moment(dateStart).format("HH:mm:ss") + '-' + moment(dateEnd).format("HH:mm:ss") + '<br/>' +
                     'duration  :' + data.markers[j].duration + 's (' + duration + ')';
 
                 channel.caipy.push({
@@ -310,7 +310,7 @@ export function getDemoEvents(data, channelList) {
         var duration = moment.duration(data.markers[j].duration * 1000).format('hh[h]mm[m]ss[s]');
 
         var tooltip = 'title : ' + data.markers[j].clip + '<br/>' +
-            'time  : ' + moment(dateStart).format("HH:mm") + '-' + moment(dateEnd).format("HH:mm") + '<br/>' +
+            'time  : ' + moment(dateStart).format("HH:mm:ss") + '-' + moment(dateEnd).format("HH:mm:ss") + '<br/>' +
             'duration  :' + data.markers[j].duration + 's (' + duration + ')';
 
         channelList.caipy.push({
