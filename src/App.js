@@ -577,7 +577,7 @@ class App extends Component {
      * Share the current page with all parameters
      */
     share() {
-        var url = window.location.origin + "?";
+        var url = window.location.href  + "?";
         //mode
         url += "mode=" + encodeURIComponent(this.mode) + "&apiUrl=" + encodeURIComponent(Storage.getApiUrl()) + "&";
 
