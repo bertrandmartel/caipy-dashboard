@@ -1,11 +1,40 @@
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 
+.flowchart {
+    text-align: center;
+}
+
+.treemap {
+    margin-top: 30px;
+}
+
+.node circle {
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 2px;
+}
+
+.link {
+    font: 20px Roboto;
+}
+
+.node text {
+    font: 20px Roboto;
+}
+
+#flowchart-modal {
+    width: 70%;
+    max-height: 100%;
+    height: 85%;
+    top: 7% !important;
+}
+
 #global-settings {
-    width:40%;
+    width: 40%;
 }
 
 #global-settings h5 {
-    margin-top:0px;
+    margin-top: 0px;
 }
 
 .top-section {
@@ -62,11 +91,20 @@
     padding-right: 15px;
 }
 
+.pull-left {
+    position: absolute;
+    left: 35px;
+    top: 25px;
+}
+
 .pull-right {
     position: absolute;
     right: 35px;
     top: 25px;
 }
+
+
+
 
 
 
@@ -78,11 +116,17 @@
 
 
 
+
+
+
 /* style of error message in modal*/
 
 .form-error {
     padding-top: 10px;
 }
+
+
+
 
 
 
@@ -98,6 +142,9 @@
 
 
 
+
+
+
 /* padding for materialize collecton item*/
 
 .collection .collection-item {
@@ -107,11 +154,17 @@
 
 
 
+
+
+
 /*remove the content after to gain space*/
 
 .row:after {
     content: normal;
 }
+
+
+
 
 
 
@@ -126,6 +179,9 @@
 .modal.modal-fixed-footer {
     heigth: 30%;
 }
+
+
+
 
 
 
@@ -196,6 +252,9 @@ div .modal .modal-footer .btn {
 
 
 
+
+
+
 /*used for hidden object*/
 
 .hidden {
@@ -213,6 +272,9 @@ div .modal .modal-footer .btn {
 
 
 
+
+
+
 /* progress bar div to be center vertically/horizontally on screen*/
 
 .center-div {
@@ -222,6 +284,9 @@ div .modal .modal-footer .btn {
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
 }
+
+
+
 
 
 

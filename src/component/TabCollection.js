@@ -65,7 +65,9 @@ export class TabCollection extends Component {
                                                       settings={this.props.settings}
                                                       onPlayRolling={this.playRolling}
                                                       onPauseRolling={this.pauseRolling}
+                                                      onSetStartOverChart={this.props.onSetStartOverChart}
                                                       keepCurrentWindow={this.props.keepCurrentWindow}
+                                                      onOpenFlowChart={this.props.onOpenFlowChart}
                                                       />
                                         </CollectionItem>
                                     </Collection>

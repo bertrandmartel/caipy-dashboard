@@ -72,6 +72,10 @@ export function getStack() {
     return getItem("stack", true, "bool");
 }
 
+export function getFlowChartOpacity() {
+    return getItem("flowChartOpacity", true, "bool");
+}
+
 export function getType() {
     return getItem("type", "range");
 }
@@ -82,6 +86,10 @@ export function setType(type) {
 
 export function setStack(stack) {
     setItem("stack", stack);
+}
+
+export function setFlowChartOpacity(opacity) {
+    setItem("flowChartOpacity", opacity);
 }
 
 export function setPreset(preset) {

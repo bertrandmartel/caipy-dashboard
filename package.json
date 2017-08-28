@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://bertrandmartel.github.io/caipy-dashboard",
   "dependencies": {
+    "flowchart.js": "git://github.com/bertrandmartel/flowchart.js.git",
     "gh-pages": "^1.0.0",
     "materialize-css": "^0.98.0",
     "moment-duration-format": "^1.3.0",

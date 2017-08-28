@@ -32,6 +32,14 @@ export class TimelineContainer extends Component {
 
     rollingPeriod = 2;
 
+    /**
+     * start over state defining which is 2 byte length numeric value 
+     * designating all the state through the startover computation have been through
+     * 
+     * @type {Number}
+     */
+    startOverState = 0;
+
     constructor(props) {
         super(props);
         this.updateData = this.updateData.bind(this);
@@ -151,6 +159,11 @@ export class TimelineContainer extends Component {
             this.props.channel,
             this.props.settings.startOverDetectAd,
             this.props.settings.startOverDetectSharpStart);
+
+        if (this.startOverState !== startOver.state) {
+            this.startOverState = startOver.state;
+            this.props.onSetStartOverChart(StartOver.buildChartCode(startOver.state), StartOver.chartOptions);
+        }
 
         this.timeline.itemSet.itemsData.remove(startOverId);
 
@@ -304,6 +317,10 @@ export class TimelineContainer extends Component {
         }
     }
 
+    openTree() {
+        this.props.onOpenFlowChart();
+    }
+
     /**
      * Create or update timeline
      * 
@@ -358,10 +375,10 @@ export class TimelineContainer extends Component {
                             <Button waves='light' onClick={() => this.playRolling()} className={ this.rolling ? "hidden" : "blue darken-1 tools"}><Icon small>play_arrow</Icon></Button>
                             <Button waves='light' onClick={() => this.pauseRolling()} className={ this.rolling ? "blue darken-1 tools" : "hidden"}><Icon small>stop</Icon></Button>
                             <Button waves='light' onClick={() => this.fasterRolling()} className="blue darken-1 tools"><Icon small>fast_forward</Icon></Button>
+                            <Button waves='light' onClick={() => this.openTree()} className="blue darken-1 tools"><Icon small>timeline</Icon></Button>
                         </div>
 
                         <div className="timeline-container" id={this.props.data.channelName}></div>
-
                     </div>
                
                 </div>;

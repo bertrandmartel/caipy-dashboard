@@ -17,6 +17,7 @@ import { GlobalSettingsView } from './component/GlobalSettings.js'
 import { UrlSettingsView } from './component/UrlSettings.js';
 import { TabCollection } from './component/TabCollection.js';
 import { TopNavbar } from './component/TopNavbar.js';
+import { FlowChartView } from './component/FlowChartModal.js';
 
 //utility for Caipy (parse JSON data)
 import * as ApiUtils from './api/CaipyApi.js';
@@ -24,6 +25,10 @@ import * as Storage from './stores/Storage.js';
 
 //import constant values
 import * as Constant from './constants/Constant.js';
+
+// jquery
+import $ from 'jquery';
+window.$ = window.jQuery = require('jquery');
 
 require('materialize-css/dist/js/materialize.min.js');
 
@@ -93,6 +98,11 @@ class App extends Component {
 
     fullEpgData = [];
 
+    startover = {
+        chartCode: "",
+        chartOptions: {}
+    };
+
     /**
      * Global settings.
      * 
@@ -117,6 +127,9 @@ class App extends Component {
         this.updateGlobalSettings = this.updateGlobalSettings.bind(this);
         this.playRolling = this.playRolling.bind(this);
         this.pauseRolling = this.pauseRolling.bind(this);
+        this.setStartOverChart = this.setStartOverChart.bind(this);
+        this.openFlowChart = this.openFlowChart.bind(this);
+        this.setFlowChartOpacity = this.setFlowChartOpacity.bind(this);
         this.initPreset();
     }
 
@@ -180,6 +193,9 @@ class App extends Component {
 
         //mode
         this.mode = Storage.getMode();
+
+        //flow chart opacity
+        this.flowChartOpacity = Storage.getFlowChartOpacity();
     }
 
     /**
@@ -324,7 +340,12 @@ class App extends Component {
     setChannel(channel) {
         this.channel = channel;
         Storage.setChannel(channel);
-        this.refresh("update", true);
+        this.refresh("update", false);
+    }
+
+    setFlowChartOpacity(opacity){
+        this.flowChartOpacity = opacity;
+        Storage.setFlowChartOpacity(opacity);
     }
 
     /**
@@ -365,11 +386,34 @@ class App extends Component {
         }
     }
 
+    /**
+     * Set the Start Over flowchart code & options
+     * 
+     * @param {Object} chartCode   Flow chart code
+     * @param {Object} chartOptions Flow chart options
+     */
+    setStartOverChart(chartCode, chartOptions) {
+        this.startover = {
+            state: "update",
+            chartCode: chartCode,
+            chartOptions: chartOptions
+        };
+        this.updateState("tools");
+    }
+
     playRolling() {
         this.updateState("tools");
     }
 
     pauseRolling() {
+        this.updateState("tools");
+    }
+
+    openFlowChart() {
+        $('#flowchart-modal').modal('open');
+        this.startover = {
+            state: "create"
+        };
         this.updateState("tools");
     }
 
@@ -401,7 +445,9 @@ class App extends Component {
                                    settings={this.settings}
                                    onPlayRolling={this.playRolling}
                                    onPauseRolling={this.pauseRolling}
+                                   onSetStartOverChart={this.setStartOverChart}
                                    keepCurrentWindow={this.state.keepCurrentWindow}
+                                   onOpenFlowChart={this.openFlowChart}
                                    />
 
                     <ProgressView value={this.state.ready}
@@ -415,6 +461,13 @@ class App extends Component {
                     <GlobalSettingsView 
                                   settings={this.settings}
                                   onGlobalSettings={this.updateGlobalSettings}/>
+
+                    <FlowChartView 
+                        flowChartOpacity={this.flowChartOpacity}
+                        state={this.startover.state}
+                        chartCode={this.startover.chartCode}
+                        chartOptions={this.startover.chartOptions}
+                        onSetFlowChartOpacity={this.setFlowChartOpacity}/>
                 </div>
                 <FooterView/>
              </div>
