@@ -78,6 +78,10 @@ export function getFlowChartOpacity() {
     return getItem("flowChartOpacity", true, "bool");
 }
 
+export function getStartOverType() {
+    return getItem("startOverType", "with advertisement");
+}
+
 export function getType() {
     return getItem("type", "range");
 }
@@ -92,6 +96,10 @@ export function setStack(stack) {
 
 export function setFlowChartOpacity(opacity) {
     setItem("flowChartOpacity", opacity);
+}
+
+export function setStartOverType(type) {
+    setItem("startOverType", type);
 }
 
 export function setPreset(preset) {

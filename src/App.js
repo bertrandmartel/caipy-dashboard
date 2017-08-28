@@ -121,6 +121,13 @@ class App extends Component {
         dropProgram: {}
     };
 
+    startovers = [
+        "with advertisement",
+        "without advertisement",
+    ];
+
+    startoverType = "with advertisement";
+
     /**
      * Global settings.
      * 
@@ -142,6 +149,7 @@ class App extends Component {
         this.setFilterSettings = this.setFilterSettings.bind(this);
         this.setPreset = this.setPreset.bind(this);
         this.setChannel = this.setChannel.bind(this);
+        this.setStartOverType = this.setStartOverType.bind(this);
         this.updateGlobalSettings = this.updateGlobalSettings.bind(this);
         this.playRolling = this.playRolling.bind(this);
         this.pauseRolling = this.pauseRolling.bind(this);
@@ -217,6 +225,9 @@ class App extends Component {
 
         //flow chart opacity
         this.flowChartOpacity = Storage.getFlowChartOpacity();
+
+        //startover
+        this.startoverType = Storage.getStartOverType();
     }
 
     /**
@@ -448,6 +459,16 @@ class App extends Component {
     }
 
     /**
+     * Set startover type
+     * @param {String} type start over type
+     */
+    setStartOverType(type) {
+        this.startoverType = type;
+        Storage.setStartOverType(type);
+        this.updateState("startover-type");
+    }
+
+    /**
      * Set channel
      * 
      * @param {String} channel channel name from dropdown list
@@ -596,10 +617,13 @@ class App extends Component {
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 onPresetChange={this.setPreset}
                                 onChannelChange={this.setChannel}
+                                onStartOverChange={this.setStartOverType}
                                 mode={this.state.mode}
                                 startDate={this.date.startDate}
                                 endDate={this.date.endDate}
                                 presets={this.presets}
+                                startover={this.startoverType}
+                                startovers={this.startovers}
                                 channels={this.channels}
                                 preset={this.preset}
                                 channel={this.channel}/>
@@ -618,6 +642,7 @@ class App extends Component {
                                    onOpenFlowChart={this.openFlowChart}
                                    onUpdateOptions={this.updateOptions}
                                    overrideOptions={this.state.overrideOptions}
+                                   startover={this.startoverType}
                                    />
 
                     <ProgressView value={this.state.ready}

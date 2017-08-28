@@ -70,6 +70,7 @@ export class TabCollection extends Component {
                                                       onOpenFlowChart={this.props.onOpenFlowChart}
                                                       onUpdateOptions={this.props.onUpdateOptions}
                                                       overrideOptions={this.props.overrideOptions}
+                                                      startover={this.props.startover}
                                                       />
                                         </CollectionItem>
                                     </Collection>

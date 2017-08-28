@@ -7,10 +7,13 @@ import vis from 'vis';
 import { Button, Icon } from 'react-materialize';
 
 //import StartOver functions
-import * as StartOver from '../startover/StartOver.js';
+import * as StartOverWithAd from '../startover/StartOverWithAd.js';
+import * as StartOverWithoutAd from '../startover/StartOverWithoutAd.js';
 
 //storage functions
 import * as Storage from '../stores/Storage.js';
+
+import * as StartOverCommon from '../startover/StartOverCommon.js';
 
 //constant id for start over item in timeline
 const startOverId = "startOverId";
@@ -39,6 +42,8 @@ export class TimelineContainer extends Component {
      * @type {Number}
      */
     startOverState = 0;
+
+    startover = "with advertisement";
 
     constructor(props) {
         super(props);
@@ -109,6 +114,10 @@ export class TimelineContainer extends Component {
             case "create":
                 this.updateData(this.props, true);
                 break;
+            case "startover-type":
+                console.log("startover type changed");
+                this.startover = this.props.startover;
+                break;
             default:
                 break;
         }
@@ -152,17 +161,33 @@ export class TimelineContainer extends Component {
      * Compute start over and replace the current startover item.
      */
     computeStartOver() {
+        var startOver;
 
-        var startOver = StartOver.computeStartover(this.currentTime,
-            this.props.caipyData,
-            this.props.epgData,
-            this.props.channel,
-            this.props.settings.startOverDetectAd,
-            this.props.settings.startOverDetectSharpStart);
+        if (this.startover === "with advertisement") {
+            startOver = StartOverWithAd.computeWithAdStartover(this.currentTime,
+                this.props.caipyData,
+                this.props.epgData,
+                this.props.channel,
+                this.props.settings.startOverDetectAd,
+                this.props.settings.startOverDetectSharpStart);
 
-        if (this.startOverState !== startOver.state) {
-            this.startOverState = startOver.state;
-            this.props.onSetStartOverChart(StartOver.buildChartCode(startOver.state), StartOver.chartOptions);
+            if (this.startOverState !== startOver.state) {
+                this.startOverState = startOver.state;
+                this.props.onSetStartOverChart(StartOverCommon.buildChartCode(StartOverWithAd.startOverState, StartOverWithAd.chartCode, startOver.state), StartOverCommon.chartOptions);
+            }
+
+        } else if (this.startover === "without advertisement") {
+            startOver = StartOverWithoutAd.computeWithoutAdStartover(this.currentTime,
+                this.props.caipyData,
+                this.props.epgData,
+                this.props.channel,
+                this.props.settings.startOverDetectAd,
+                this.props.settings.startOverDetectSharpStart);
+
+            if (this.startOverState !== startOver.state) {
+                this.startOverState = startOver.state;
+                this.props.onSetStartOverChart(StartOverCommon.buildChartCode(StartOverWithoutAd.startOverState, StartOverWithoutAd.chartCode, startOver.state), StartOverCommon.chartOptions);
+            }
         }
 
         this.timeline.itemSet.itemsData.remove(startOverId);
@@ -337,6 +362,7 @@ export class TimelineContainer extends Component {
      * @param  {Boolean} create define if action is create or update 
      */
     updateData(config, create) {
+        this.startover = this.props.startover;
         var container = document.getElementById(config.data.channelName);
 
         this.date.start = config.data.start;

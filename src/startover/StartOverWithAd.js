@@ -1,4 +1,6 @@
-const chartCode = `
+import * as StartOver from './StartOverCommon.js';
+
+export const chartCode = `
 st->op1->cond1
 cond1(yes)->current
 
@@ -21,8 +23,6 @@ cond4(yes,right)->cond5
 cond5(yes,right)->op3
 cond5(no)->fail`;
 
-const linkStyleColor = "Red";
-
 export const chartOptions = {
     width: 600,
     x: 0,
@@ -44,7 +44,7 @@ export const chartOptions = {
     },
 };
 
-const startOverState = {
+export const startOverState = {
     "start": {
         code: 'st',
         mask: 0x00001,
@@ -184,7 +184,7 @@ const startOverState = {
  * @param  {Number} startOverDetectSharpStart  startover detection settings : time range for looking for a SharpStart before start of program
  * @return {Object}                            startover result with startover field (caipy event item) & program field (epg item)
  */
-export function computeStartover(time, caipyData, epgData, channel, startOverDetectAd, startOverDetectSharpStart) {
+export function computeWithAdStartover(time, caipyData, epgData, channel, startOverDetectAd, startOverDetectSharpStart) {
     var startover = {
         startover: null,
         program: null,
@@ -194,10 +194,10 @@ export function computeStartover(time, caipyData, epgData, channel, startOverDet
     var currentTime = time.getTime();
 
     //filter the caipy event data
-    caipyData = initCaipyData(caipyData, channel, currentTime);
+    caipyData = StartOver.initCaipyData(caipyData, channel, currentTime);
 
     //search current program
-    var program = searchCurrentProgram(epgData, channel, currentTime);
+    var program = StartOver.searchCurrentProgram(epgData, channel, currentTime);
 
     //X : check program exist at current time
     if (program) {
@@ -237,51 +237,6 @@ export function computeStartover(time, caipyData, epgData, channel, startOverDet
 }
 
 /**
- * This will initialize Caipy event for preparing Start Over processing : 
- * <ul>
- *     <li>keep only events before the current time</li>
- *     <li>filter events in descending order</li>
- * </ul>
- * @param  {Object} caipyData   Caipy event data
- * @param  {String} channel     channel name
- * @param  {Number} currentTime current time in millis
- * @return {Object} caipy data filtered
- */
-function initCaipyData(caipyData, channel, currentTime) {
-    for (var i = 0; i < caipyData.length; i++) {
-        if (channel === caipyData[i].name) {
-            var rows = caipyData[i].rows;
-            //filter only thoses  <= current time
-            caipyData = rows.filter(function(item) {
-                return new Date(item.time).getTime() <= currentTime;
-            });
-            caipyData.sort(function(a, b) { return new Date(b.time).getTime() - new Date(a.time).getTime() });
-            break;
-        }
-    }
-    return caipyData
-}
-
-/**
- * Look for current program in EPG
- * 
- * @param  {Object} epgData     EPG data
- * @param  {String} channel     channel name
- * @param  {Number} currentTime current time in millis
- * @return {Object}             program item or null if not found
- */
-function searchCurrentProgram(epgData, channel, currentTime) {
-    for (var j = 0; j < epgData.rows.length; j++) {
-        var start = new Date(epgData.rows[j].start).getTime();
-        var end = new Date(epgData.rows[j].end).getTime();
-        if (currentTime >= start && currentTime <= end) {
-            return epgData.rows[j];
-        }
-    }
-    return null;
-}
-
-/**
  * Look for the last program in EPG
  * 
  * @param  {Object} epgData     EPG data
@@ -299,36 +254,6 @@ function searchLastProgram(epgData, channel, currentTime) {
         lastProgram = epgData.rows[j];
     }
     return null;
-}
-
-/**
- * Look for the event type at the beginning of the TV program, it could be either SharpStart, or an ad or nothing.
- *
- * @param  {Object} caipyData   caipy data (previously filtered)
- * @param  {Number} programStart time in millis since 1970 for the start of TV program
- * @return {String} event type (clip name)
- */
-function searchProgramStartEvent(caipyData, programStart) {
-    for (var i = 0; i < caipyData.length; i++) {
-        var startTime = new Date(caipyData[i].time).getTime();
-        var endTime = startTime + caipyData[i].duration * 1000;
-
-        if (programStart >= startTime && programStart < endTime) {
-            return {
-                clip: caipyData[i].clip,
-                index: i
-            };
-        } else if (programStart > endTime) {
-            return {
-                clip: "",
-                index: -1
-            };
-        }
-    }
-    return {
-        clip: "",
-        index: -1
-    };
 }
 
 /**
@@ -350,36 +275,6 @@ function searchAdAfterProgramStart(programStartEvent, caipyData, programStart, t
         }
         if (caipyData[i].clip !== "SharpStart") {
             return caipyData[i];
-        }
-    }
-    return null;
-}
-
-/**
- * Search an a SharpStart event before the program start (delimited by timeRange)
- * 
- * @param  {Object} programStartEvent program start event defining a clip name and index value (index of event at the beginning of the program)
- * @param  {Object} caipyData         caipy event data
- * @param  {Number} programStart      program start time in milliseconds since 1970
- * @param  {Number} timeRange         max time range to look for after the program start
- * @return {Object}                   Caipy SharpStart event or null if not found
- */
-function searchSharpStartBeforeProgramStart(programStartEvent, caipyData, programStart, timeRange) {
-    var max = programStart - timeRange;
-
-    for (var i = programStartEvent.index; i < caipyData.length; i++) {
-        var startTime = new Date(caipyData[i].time).getTime();
-        var endTime = startTime + caipyData[i].duration * 1000;
-
-        if (endTime < max) {
-            return null;
-        }
-        //we want only SharpStart event but not the one that occured at program start
-        if (caipyData[i].clip === "SharpStart" && i !== programStartEvent.index) {
-            return {
-                event: caipyData[i],
-                index: i
-            };
         }
     }
     return null;
@@ -433,7 +328,7 @@ function searchAdAfterTime(caipyData, lastProgram) {
  */
 function searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart) {
 
-    var sharpStartBeforeProgram = searchSharpStartBeforeProgramStart(programStartEvent, caipyData, programStart, startOverDetectSharpStart);
+    var sharpStartBeforeProgram = StartOver.searchSharpStartBeforeProgramStart(programStartEvent, caipyData, programStart, startOverDetectSharpStart);
 
     if (sharpStartBeforeProgram) {
         state ^= startOverState["ad_after_previous_sharpstart"].mask;
@@ -471,7 +366,7 @@ function computeCurrentProgram(state, program, caipyData, startOverDetectAd, sta
     var programStart = new Date(program.start).getTime();
 
     //look for the the type of event at the beginning of the TV program
-    var programStartEvent = searchProgramStartEvent(caipyData, programStart);
+    var programStartEvent = StartOver.searchProgramStartEvent(caipyData, programStart);
 
     state ^= startOverState["event_at_program_start"].mask;
 
@@ -504,30 +399,4 @@ function computeCurrentProgram(state, program, caipyData, startOverDetectAd, sta
         console.log("[02] - we do have an ad or no event at all at the beginning of the program");
         return searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart);
     }
-}
-
-/**
- * Build Start Over flowchart from startover state
- * 
- * @param  {Number} state 2 Byte value Startover start
- * @return {String}       chart Code
- */
-export function buildChartCode(state) {
-    var code = "";
-    var linkFlow = "";
-    for (var property in startOverState) {
-        if (startOverState.hasOwnProperty(property)) {
-            var prop = startOverState[property];
-            var active = '';
-            if ((state & prop.mask) !== 0) {
-                active = '|active';
-                linkFlow += prop.code + '({"stroke":"' + linkStyleColor + '"})@>'
-            }
-            code += prop.code + '(' + prop.params + ')=>' + prop.type + ': ' + prop.text + active + '\n';
-        }
-    }
-    linkFlow = linkFlow.substring(0, linkFlow.length - 2);
-
-    code += chartCode + '\n' + linkFlow;
-    return code;
 }

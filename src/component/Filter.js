@@ -26,6 +26,7 @@ export class FilterView extends Component {
         this.setFilterSettings = this.setFilterSettings.bind(this);
         this.handlePresetChange = this.handlePresetChange.bind(this);
         this.handleChannelChange = this.handleChannelChange.bind(this);
+        this.handleStartOverChange = this.handleStartOverChange.bind(this);
     }
 
     handleStartDateChange(e, value) {
@@ -35,6 +36,12 @@ export class FilterView extends Component {
             startDate: this.startDate,
             endDate: this.endDate
         })
+    }
+
+    handleStartOverChange(e, value) {
+        if (typeof this.props.onStartOverChange === 'function') {
+            this.props.onStartOverChange(value);
+        }
     }
 
     handlePresetChange(e, value) {
@@ -71,7 +78,6 @@ export class FilterView extends Component {
         if (!this.endDateChanged) {
             this.endDate = this.props.endDate;
         }
-
         return <Row className={this.props.mode === "demo" ? 'filter-row hidden': 'filter-row'}>
                     <input className='hidden' id='startDate' type='hidden' value={this.startDate} />
                     <input className='hidden' id='endDate' type='hidden' value={this.endDate} />
@@ -87,6 +93,15 @@ export class FilterView extends Component {
                     <Input className="presets" onChange={(e,value)=>this.handlePresetChange(e,value)} s={2} type='select' label="Presets" value={this.props.preset}>
                             {
                                 this.props.presets.map(function(value, index){
+                                    return (
+                                        <option key={value} value={value}>{value}</option>  
+                                   );
+                                },this)
+                            }
+                    </Input>
+                    <Input className="presets" onChange={(e,value)=>this.handleStartOverChange(e,value)} s={2} type='select' label="StartOver" value={this.props.startover}>
+                            {
+                                this.props.startovers.map(function(value, index){
                                     return (
                                         <option key={value} value={value}>{value}</option>  
                                    );

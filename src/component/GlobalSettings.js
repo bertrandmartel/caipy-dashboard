@@ -216,7 +216,7 @@ export class GlobalSettingsView extends Component {
                             <Section>
                                 <h5>Start Over</h5>
                                 <Row className="top-section">
-                                    <Col s={4} className='duration-picker-label' >Detect Ad after</Col>
+                                    <Col s={4} className='duration-picker-label' >Detect event after</Col>
                                     <Col s={8} className='duration-picker-container' >
                                         <DurationPicker className='duration-picker' 
                                             name='startOverDetectAd'
@@ -230,7 +230,7 @@ export class GlobalSettingsView extends Component {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <Col s={4} className='duration-picker-label' >Detect SharpStart before</Col>
+                                    <Col s={4} className='duration-picker-label' >Detect event before</Col>
                                     <Col s={8} className='duration-picker-container' >
                                         <DurationPicker className='duration-picker' 
                                             name='startOverDetectSharpStart' 
