@@ -20,11 +20,7 @@ window.$ = window.jQuery = require('jquery');
  */
 export class GlobalSettingsView extends Component {
 
-    /**
-     * State holding the error message
-     * @type {Object}
-     */
-    state = {
+   container = {
         data: {
             windowSize: 0,
             startOverDetectAd: 0,
@@ -69,8 +65,7 @@ export class GlobalSettingsView extends Component {
             startOverDetectSharpStart: this.props.settings.startOverDetectSharpStart,
             dropProgram: this.props.settings.dropProgram
         };
-
-        this.setState({
+        this.container = {
             data: {
                 windowSize: this.props.settings.windowSize,
                 startOverDetectAd: this.props.settings.startOverDetectAd,
@@ -83,7 +78,24 @@ export class GlobalSettingsView extends Component {
                 startOverDetectSharpStart: {},
                 dropProgram: {}
             }
-        });
+        };
+    }
+
+    componentDidUpdate() {
+        this.container = {
+            data: {
+                windowSize: this.props.settings.windowSize,
+                startOverDetectAd: this.props.settings.startOverDetectAd,
+                startOverDetectSharpStart: this.props.settings.startOverDetectSharpStart,
+                dropProgram: this.props.settings.dropProgram
+            },
+            style: {
+                windowSize: this.props.settingsStyle.windowSize,
+                startOverDetectAd: this.props.settingsStyle.startOverDetectAd,
+                startOverDetectSharpStart: this.props.settingsStyle.startOverDetectSharpStart,
+                dropProgram: this.props.settingsStyle.dropProgram
+            }
+        };
     }
 
     /**
@@ -114,7 +126,7 @@ export class GlobalSettingsView extends Component {
         var startOverDetectSharpStart = ApiUtils.convertMillisToDuration(Constant.startOverRangeSharpStart);
         var dropProgram = ApiUtils.convertMillisToDuration(Constant.cutProgramDuration);
 
-        var resp = this.state;
+        var resp = this.container;
         resp.data.windowSize = windowSize;
         resp.data.startOverDetectAd = startOverDetectAd;
         resp.data.startOverDetectSharpStart = startOverDetectSharpStart;
@@ -125,7 +137,8 @@ export class GlobalSettingsView extends Component {
         this.data["startOverDetectSharpStart"] = Constant.startOverRangeSharpStart;
         this.data["dropProgram"] = Constant.cutProgramDuration;
 
-        this.setState(resp);
+        this.props.onRefreshGlobalSettingsView(resp);
+        //this.setState(resp);
     }
 
     focusText(e) {
@@ -152,21 +165,22 @@ export class GlobalSettingsView extends Component {
      * @param  {Object} data state data from the Duration view that contain duration data + style
      */
     updateDurationValue(type, data) {
-        var resp = this.state;
+        var resp = this.container;
         resp.data[type] = {
             hour: data.data.hour,
             minutes: data.data.minutes,
             seconds: data.data.seconds
         };
         resp.style[type] = data.style;
-        this.setState(resp);
+        this.props.onRefreshGlobalSettingsView(resp);
+        //this.setState(resp);
     }
 
     render() {
-        var windowSize = ApiUtils.convertMillisToDuration(this.state.data.windowSize);
-        var startOverDetectAd = ApiUtils.convertMillisToDuration(this.state.data.startOverDetectAd);
-        var startOverDetectSharpStart = ApiUtils.convertMillisToDuration(this.state.data.startOverDetectSharpStart);
-        var dropProgram = ApiUtils.convertMillisToDuration(this.state.data.dropProgram);
+        var windowSize = ApiUtils.convertMillisToDuration(this.container.data.windowSize);
+        var startOverDetectAd = ApiUtils.convertMillisToDuration(this.container.data.startOverDetectAd);
+        var startOverDetectSharpStart = ApiUtils.convertMillisToDuration(this.container.data.startOverDetectSharpStart);
+        var dropProgram = ApiUtils.convertMillisToDuration(this.container.data.dropProgram);
 
         return <Modal
                     id="global-settings"
@@ -187,7 +201,7 @@ export class GlobalSettingsView extends Component {
                                     <Col s={8} className='duration-picker-container' >
                                         <DurationPicker 
                                             className='duration-picker'
-                                            style={this.state.style.windowSize}
+                                            style={this.container.style.windowSize}
                                             name='windowSize'
                                             hour={windowSize.hour} 
                                             minutes={windowSize.minutes} 
@@ -206,7 +220,7 @@ export class GlobalSettingsView extends Component {
                                     <Col s={8} className='duration-picker-container' >
                                         <DurationPicker className='duration-picker' 
                                             name='startOverDetectAd'
-                                            style={this.state.style.startOverDetectAd}
+                                            style={this.container.style.startOverDetectAd}
                                             hour={startOverDetectAd.hour} 
                                             minutes={startOverDetectAd.minutes} 
                                             seconds={startOverDetectAd.seconds}
@@ -220,7 +234,7 @@ export class GlobalSettingsView extends Component {
                                     <Col s={8} className='duration-picker-container' >
                                         <DurationPicker className='duration-picker' 
                                             name='startOverDetectSharpStart' 
-                                            style={this.state.style.startOverDetectSharpStart}
+                                            style={this.container.style.startOverDetectSharpStart}
                                             hour={startOverDetectSharpStart.hour} 
                                             minutes={startOverDetectSharpStart.minutes} 
                                             seconds={startOverDetectSharpStart.seconds}
@@ -234,7 +248,7 @@ export class GlobalSettingsView extends Component {
                                     <Col s={8} className='duration-picker-container' >
                                         <DurationPicker className='duration-picker' 
                                             name='dropProgram' 
-                                            style={this.state.style.dropProgram}
+                                            style={this.container.style.dropProgram}
                                             hour={dropProgram.hour} 
                                             minutes={dropProgram.minutes} 
                                             seconds={dropProgram.seconds}

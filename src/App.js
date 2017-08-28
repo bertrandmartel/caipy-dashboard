@@ -114,6 +114,13 @@ class App extends Component {
         windowEnd: null
     };
 
+    settingsStyle = {
+        windowSize: {},
+        startOverDetectAd: {},
+        startOverDetectSharpStart: {},
+        dropProgram: {}
+    };
+
     /**
      * Global settings.
      * 
@@ -143,6 +150,7 @@ class App extends Component {
         this.setFlowChartOpacity = this.setFlowChartOpacity.bind(this);
         this.share = this.share.bind(this);
         this.updateOptions = this.updateOptions.bind(this);
+        this.refreshGlobalSettingsView = this.refreshGlobalSettingsView.bind(this);
         this.initPreset();
     }
 
@@ -538,6 +546,12 @@ class App extends Component {
         };
     }
 
+    refreshGlobalSettingsView(settings) {
+        this.settings = settings.data;
+        this.settingsStyle = settings.style;
+        this.updateState("tools");
+    }
+
     /**
      * Share the current page with all parameters
      */
@@ -616,7 +630,9 @@ class App extends Component {
 
                     <GlobalSettingsView 
                                   settings={this.settings}
-                                  onGlobalSettings={this.updateGlobalSettings}/>
+                                  settingsStyle={this.settingsStyle}
+                                  onGlobalSettings={this.updateGlobalSettings}
+                                  onRefreshGlobalSettingsView={this.refreshGlobalSettingsView}/>
 
                     <FlowChartView 
                         flowChartOpacity={this.flowChartOpacity}
