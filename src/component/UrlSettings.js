@@ -4,19 +4,11 @@ import React, { Component } from 'react';
 //react components
 import { Modal, Button, Input } from 'react-materialize';
 
+import * as Utils from '../utils/Utils.js';
+
 // jquery
 import $ from 'jquery';
 window.$ = window.jQuery = require('jquery');
-
-/**
- * Check if URL is valid https://stackoverflow.com/a/30229098/2614364
- * 
- * @param  {String}  str url
- * @return {Boolean}     url validity
- */
-function isValidUrl(str) {
-    return /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!-/]))?/.test(str);
-}
 
 /**
  * Caipy URL settings view
@@ -55,7 +47,7 @@ export class UrlSettingsView extends Component {
      * @param {String} url URL input value
      */
     setUrlSettings(url) {
-        if (isValidUrl(url)) {
+        if (Utils.isValidUrl(url)) {
             if (typeof this.props.onSetUrlSettings === 'function') {
                 this.close();
                 this.props.onSetUrlSettings(url);

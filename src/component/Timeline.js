@@ -206,11 +206,20 @@ export class TimelineContainer extends Component {
     }
 
     /**
+     * Set current time 
+     * @param {Number time current time in timeline
+     */
+    setCurrentTime(time) {
+        this.currentTime = time;
+        this.props.onUpdateOptions(this.timeline.getWindow(), this.currentTime);
+    }
+
+    /**
      * Called when time change
      * @param  {Object} properties properties
      */
     onTimeChange(properties) {
-        this.currentTime = properties.time;
+        this.setCurrentTime(properties.time);
         this.computeStartOver();
     }
 
@@ -224,7 +233,7 @@ export class TimelineContainer extends Component {
 
     setCustomTime(time) {
         this.clearCustomTime();
-        this.currentTime = time;
+        this.setCurrentTime(time);
         this.timeline.addCustomTime(time, time);
         this.computeStartOver();
     }
@@ -353,10 +362,28 @@ export class TimelineContainer extends Component {
         }
         this.timeline.setGroups(config.data.groups);
         this.timeline.setItems(config.data.items);
-        if (!this.props.keepCurrentWindow) {
-            this.createCustomTime(window);
+
+        if (config.overrideOptions && config.overrideOptions.windowStart) {
+
+            var self = this;
+            setTimeout(function() {
+                self.timeline.setWindow({
+                    start: config.overrideOptions.windowStart.getTime(),
+                    end: config.overrideOptions.windowEnd.getTime()
+                });
+            }, 250);
+
+            this.clearCustomTime();
+            this.timeline.addCustomTime(config.overrideOptions.currentTime, config.overrideOptions.currentTime);
+            this.onTimeChange({
+                time: config.overrideOptions.currentTime
+            });
         } else {
-            this.computeStartOver();
+            if (!this.props.keepCurrentWindow) {
+                this.createCustomTime(window);
+            } else {
+                this.computeStartOver();
+            }
         }
     }
 

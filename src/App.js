@@ -5,6 +5,8 @@ import './css/MaterialColor.css';
 import './css/Timeline.css';
 import './css/App.css';
 
+import moment from 'moment';
+
 //react
 import React, { Component } from 'react';
 
@@ -25,6 +27,9 @@ import * as Storage from './stores/Storage.js';
 
 //import constant values
 import * as Constant from './constants/Constant.js';
+
+//import utils 
+import * as Utils from './utils/Utils.js';
 
 // jquery
 import $ from 'jquery';
@@ -103,6 +108,12 @@ class App extends Component {
         chartOptions: {}
     };
 
+    timelineOptions = {
+        currentTime: null,
+        windowStart: null,
+        windowEnd: null
+    };
+
     /**
      * Global settings.
      * 
@@ -130,6 +141,8 @@ class App extends Component {
         this.setStartOverChart = this.setStartOverChart.bind(this);
         this.openFlowChart = this.openFlowChart.bind(this);
         this.setFlowChartOpacity = this.setFlowChartOpacity.bind(this);
+        this.share = this.share.bind(this);
+        this.updateOptions = this.updateOptions.bind(this);
         this.initPreset();
     }
 
@@ -199,11 +212,103 @@ class App extends Component {
     }
 
     /**
+     * Parse url parameter in case it is a shared page.
+     */
+    parseUrlParams() {
+        var query = Utils.getQueryParams(document.location.search);
+
+        if (query.mode) {
+            if (query.mode === "live" || query.mode === "demo") {
+                Storage.setMode(query.mode);
+                this.mode = query.mode;
+            }
+        }
+        if (query.apiUrl) {
+            if (this.mode === 'live' && Utils.isValidUrl(query.apiUrl)) {
+                Storage.setApiUrl(query.apiUrl);
+                Storage.setMode("live");
+                this.mode = "live";
+                this.initPreset();
+            } else {
+                console.log("invalid mode or invalid url");
+            }
+        }
+        if (query.startDate) {
+            if (moment(query.startDate, "DD/MM/YYYY").isValid()) {
+                this.date.startDate = query.startDate;
+                Storage.setStartDate(this.date.startDate);
+            }
+        }
+        if (query.endDate) {
+            if (moment(query.endDate, "DD/MM/YYYY").isValid()) {
+                this.date.endDate = query.endDate;
+                Storage.setEndDate(this.date.endDate);
+            }
+        }
+        if (query.dropProgram) {
+            if (Utils.isNumeric(query.dropProgram)) {
+                this.settings.dropProgram = parseInt(query.dropProgram, 10);
+                Storage.setCutProgramDuration(this.settings.dropProgram);
+            } else {
+                console.log("error not numeric : " + query.dropProgram);
+            }
+        }
+        if (query.startOverDetectAd) {
+            if (Utils.isNumeric(query.startOverDetectAd)) {
+                this.settings.startOverDetectAd = parseInt(query.startOverDetectAd, 10);
+                Storage.setStartOverRangeAd(this.settings.startOverDetectAd);
+            } else {
+                console.log("error not numeric : " + query.startOverDetectAd);
+            }
+        }
+        if (query.startOverDetectSharpStart) {
+            if (Utils.isNumeric(query.startOverDetectSharpStart)) {
+                this.settings.startOverDetectSharpStart = parseInt(query.startOverDetectSharpStart, 10);
+                Storage.setStartOverRangeSharpStart(this.settings.startOverDetectSharpStart);
+            } else {
+                console.log("error not numeric : " + query.startOverDetectSharpStart);
+            }
+        }
+        if (query.channel) {
+            this.channel = query.channel;
+            Storage.setChannel(this.channel);
+        }
+        if (query.preset) {
+            this.preset = query.preset;
+            Storage.setPreset(this.preset);
+        }
+
+        var options = {
+            currentTime: null,
+            windowStart: null,
+            windowEnd: null
+        };
+
+        if (query.currentTime) {
+            if (Utils.isNumeric(query.currentTime)) {
+                options.currentTime = new Date(parseInt(query.currentTime, 10));
+            }
+        }
+        if (query.windowStart) {
+            if (Utils.isNumeric(query.windowStart)) {
+                options.windowStart = new Date(parseInt(query.windowStart, 10));
+            }
+        }
+        if (query.windowEnd) {
+            if (Utils.isNumeric(query.windowEnd)) {
+                options.windowEnd = new Date(parseInt(query.windowEnd, 10));
+            }
+        }
+        return options;
+    }
+
+    /**
      * On mount check the mode ("live" or "demo") and refresh the data according to this
      */
     componentDidMount() {
+        var options = this.parseUrlParams();
         this.initChannel();
-        this.refresh("create", false);
+        this.refresh("create", false, options);
     }
 
     /**
@@ -211,7 +316,8 @@ class App extends Component {
      * 
      * @param  {String} actionType action to perform
      */
-    updateState(actionType, keepCurrentWindow) {
+    updateState(actionType, keepCurrentWindow, overrideOptions) {
+
         this.setState({
             actionType: actionType,
             ready: true,
@@ -220,6 +326,7 @@ class App extends Component {
             items: this.items,
             mode: this.mode,
             options: this.options,
+            overrideOptions: overrideOptions,
             url: Storage.getApiUrl(),
             message: "",
             startDate: this.date.startDate,
@@ -233,12 +340,12 @@ class App extends Component {
      * @param  {Object} data       JSON data object (from query response or from local JSON file)
      * @param  {String} actionType type of action to perform ("create","update","idle")
      */
-    parseItems(caipyData, epgData, items, actionType, keepCurrentWindow) {
+    parseItems(caipyData, epgData, items, actionType, keepCurrentWindow, overrideOptions) {
         this.items = items;
         this.caipyData = caipyData;
         this.epgData = epgData;
         this.fullEpgData = JSON.parse(JSON.stringify(epgData));
-        this.updateState(actionType, keepCurrentWindow);
+        this.updateState(actionType, keepCurrentWindow, overrideOptions);
     }
 
     /**
@@ -265,7 +372,7 @@ class App extends Component {
      * Refresh the data according to mode
      * @param  {String} actionType type of action to perform ("create","update","idle")
      */
-    refresh(actionType, keepCurrentWindow) {
+    refresh(actionType, keepCurrentWindow, overrideOptions) {
         var that = this;
 
         that.setState({
@@ -292,7 +399,7 @@ class App extends Component {
                     console.log(err);
                     return that.showError();
                 }
-                that.parseItems(res.caipyEvents, res.epgPrograms, res.timelineItems, actionType, keepCurrentWindow);
+                that.parseItems(res.caipyEvents, res.epgPrograms, res.timelineItems, actionType, keepCurrentWindow, overrideOptions);
             });
     }
 
@@ -343,7 +450,7 @@ class App extends Component {
         this.refresh("update", false);
     }
 
-    setFlowChartOpacity(opacity){
+    setFlowChartOpacity(opacity) {
         this.flowChartOpacity = opacity;
         Storage.setFlowChartOpacity(opacity);
     }
@@ -417,13 +524,60 @@ class App extends Component {
         this.updateState("tools");
     }
 
+    /**
+     * Update timeline window and timeline current time
+     * 
+     * @param  {Object} window      timeline window object with start and end time
+     * @param  {Date}   currentTime current timeline datetime
+     */
+    updateOptions(window, currentTime) {
+        this.timelineOptions = {
+            currentTime: currentTime,
+            windowStart: window.start,
+            windowEnd: window.end
+        };
+    }
+
+    /**
+     * Share the current page with all parameters
+     */
+    share() {
+        var url = window.location.origin + "?";
+        //mode
+        url += "mode=" + encodeURIComponent(this.mode) + "&apiUrl=" + encodeURIComponent(Storage.getApiUrl()) + "&";
+
+        //date
+        url += "startDate=" + encodeURIComponent(this.date.startDate) + "&endDate=" + encodeURIComponent(this.date.endDate) + "&";
+
+        //startover settings
+        url += "dropProgram=" + this.settings.dropProgram + "&startOverDetectAd=" + this.settings.startOverDetectAd + "&";
+        url += "startOverDetectSharpStart=" + this.settings.startOverDetectSharpStart + "&";
+
+        //window & current time
+        if (this.timelineOptions.currentTime != null) {
+            url += "currentTime=" + this.timelineOptions.currentTime.getTime() + "&";
+        }
+        if (this.timelineOptions.windowStart != null) {
+            url += "windowStart=" + this.timelineOptions.windowStart.getTime() + "&";
+        }
+        if (this.timelineOptions.windowEnd != null) {
+            url += "windowEnd=" + this.timelineOptions.windowEnd.getTime() + "&";
+        }
+        //preset and channel
+        url += "channel=" + encodeURIComponent(this.channel) + "&";
+        url += "preset=" + encodeURIComponent(this.preset);
+
+        //https://stackoverflow.com/a/6055620/2614364
+        window.prompt("Copy to clipboard: Ctrl+C, Enter", url);
+    }
+
     render() {
         return (
             <div className="body">
                 <div className="main">
 
                     <TopNavbar mode={this.state.mode}
-                               onRefresh={this.refresh}/>
+                               onShare={this.share}/>
 
                     <FilterView onSetFilterSettings={this.setFilterSettings}
                                 onPresetChange={this.setPreset}
@@ -448,6 +602,8 @@ class App extends Component {
                                    onSetStartOverChart={this.setStartOverChart}
                                    keepCurrentWindow={this.state.keepCurrentWindow}
                                    onOpenFlowChart={this.openFlowChart}
+                                   onUpdateOptions={this.updateOptions}
+                                   overrideOptions={this.state.overrideOptions}
                                    />
 
                     <ProgressView value={this.state.ready}

@@ -10,6 +10,7 @@ import * as Constant from '../constants/Constant.js';
  * @return {Object}              value retrieved or default value, type may vary
  */
 function getItem(name, defaultValue, type) {
+
     var value = localStorage.getItem(name);
     if (value === null) {
         localStorage.setItem(name, defaultValue);
@@ -37,6 +38,7 @@ function setItem(field, value) {
 }
 
 export function getApiUrl() {
+
     return getItem("api-url", "");
 }
 

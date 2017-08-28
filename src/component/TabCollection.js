@@ -68,6 +68,8 @@ export class TabCollection extends Component {
                                                       onSetStartOverChart={this.props.onSetStartOverChart}
                                                       keepCurrentWindow={this.props.keepCurrentWindow}
                                                       onOpenFlowChart={this.props.onOpenFlowChart}
+                                                      onUpdateOptions={this.props.onUpdateOptions}
+                                                      overrideOptions={this.props.overrideOptions}
                                                       />
                                         </CollectionItem>
                                     </Collection>
