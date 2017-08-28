@@ -38,7 +38,7 @@ export class TopNavbar extends Component {
     }
 
     render() {
-        return <Navbar href={process.env.PUBLIC_URL} brand='Caipy Dashboard' className="blue darken-1" right>
+        return <Navbar href={process.env.PUBLIC_URL} brand={'Caipy Dashboard v' + process.env.REACT_APP_VERSION} className="blue darken-1" right>
                     <NavItem onClick={() => this.globalSettings()}><Icon medium>settings</Icon></NavItem>
                     <NavItem onClick={() => this.urlSettings()}><Chip close={false}>{this.props.mode} mode</Chip></NavItem> 
                     <NavItem href="https://github.com/bertrandmartel/caipy-dashboard" target="_blank" ><Icon>code</Icon></NavItem>

@@ -1,6 +1,6 @@
 {
   "name": "caipy-dashboard",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "homepage": "https://bertrandmartel.github.io/caipy-dashboard",
   "dependencies": {
@@ -16,8 +16,8 @@
     "vis": "^4.20.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "REACT_APP_VERSION=$(node -pe 'require(\"./package.json\").version') react-scripts start",
+    "build": "REACT_APP_VERSION=$(node -pe 'require(\"./package.json\").version') react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
