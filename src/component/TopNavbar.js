@@ -19,7 +19,7 @@ export class TopNavbar extends Component {
     urlSettings() {
         $('#url-settings').modal('open');
     }
-    
+
     /**
      * Open Global settings modal
      */
@@ -30,14 +30,14 @@ export class TopNavbar extends Component {
     /**
      * Share this page
      */
-    share(){
+    share() {
         if (typeof this.props.onShare === 'function') {
             this.props.onShare();
         }
     }
 
     render() {
-        return <Navbar href={process.env.PUBLIC_URL} brand={'Caipy Dashboard v' + process.env.REACT_APP_VERSION} className="blue darken-1" right>
+        return <Navbar href={process.env.PUBLIC_URL+"/"} brand={'Caipy Dashboard v' + process.env.REACT_APP_VERSION} className="blue darken-1" right>
                     <NavItem onClick={() => this.globalSettings()}><Icon medium>settings</Icon></NavItem>
                     <NavItem onClick={() => this.share()}><Icon>share</Icon></NavItem> 
                     <NavItem onClick={() => this.urlSettings()}><Chip close={false}>{this.props.mode} mode</Chip></NavItem> 
