@@ -475,7 +475,7 @@ function computeCurrentProgram(state, program, caipyData, startOverDetectAd, sta
 
     state ^= startOverState["event_at_program_start"].mask;
 
-    if (programStartEvent.index == -1) {
+    if (programStartEvent.index === -1) {
         state ^= startOverState["no_event_at_program_start"].mask;
         console.log("no event have been found at program start");
         return [state, null];
