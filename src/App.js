@@ -296,6 +296,14 @@ class App extends Component {
             this.preset = query.preset;
             Storage.setPreset(this.preset);
         }
+        if (query.startoverType) {
+            for (var i = 0; i < this.startovers.length; i++) {
+                if (this.startovers[i] === query.startoverType) {
+                    this.startoverType = query.startoverType;
+                    Storage.setStartOverType(this.startoverType);
+                }
+            }
+        }
 
         var options = {
             currentTime: null,
@@ -577,7 +585,7 @@ class App extends Component {
      * Share the current page with all parameters
      */
     share() {
-        var url = window.location.href  + "?";
+        var url = window.location.href + "?";
         //mode
         url += "mode=" + encodeURIComponent(this.mode) + "&apiUrl=" + encodeURIComponent(Storage.getApiUrl()) + "&";
 
@@ -600,7 +608,10 @@ class App extends Component {
         }
         //preset and channel
         url += "channel=" + encodeURIComponent(this.channel) + "&";
-        url += "preset=" + encodeURIComponent(this.preset);
+        url += "preset=" + encodeURIComponent(this.preset) + "&";
+
+        //startover mode
+        url += "startoverType=" + encodeURIComponent(this.startoverType);
 
         //https://stackoverflow.com/a/6055620/2614364
         window.prompt("Copy to clipboard: Ctrl+C, Enter", url);
