@@ -70,7 +70,7 @@ export class FlowChartView extends Component {
             return <Modal
                     fixedFooter
                     id="flowchart-modal"
-                    header='Start Over flowchart'
+                    header={'Start Over Flowchart : ' + this.props.startoverType}
                     actions={
                         <div>
                             <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>

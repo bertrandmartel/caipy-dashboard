@@ -675,7 +675,8 @@ class App extends Component {
                         state={this.startover.state}
                         chartCode={this.startover.chartCode}
                         chartOptions={this.startover.chartOptions}
-                        onSetFlowChartOpacity={this.setFlowChartOpacity}/>
+                        onSetFlowChartOpacity={this.setFlowChartOpacity}
+                        startoverType={this.startoverType}/>
                 </div>
                 <FooterView/>
              </div>
