@@ -115,8 +115,8 @@ export class TimelineContainer extends Component {
                 this.updateData(this.props, true);
                 break;
             case "startover-type":
-                console.log("startover type changed");
                 this.startover = this.props.startover;
+                this.computeStartOver();
                 break;
             default:
                 break;
