@@ -118,7 +118,6 @@ export function computeWithoutAdStartover(time, caipyData, epgData, channel, det
     } else {
         programStartEvent = StartOver.searchProgramStartEvent(caipyData, time.getTime());
 
-        console.log(programStartEvent);
         console.log('[1] - program was not found');
         //[startover.state, startover.startover] = searchBeforeProgram(startover.state, program, programStartEvent, caipyData, programStart, detectBefore);
     }
@@ -127,14 +126,22 @@ export function computeWithoutAdStartover(time, caipyData, epgData, channel, det
 
 function searchBeforeProgram(state, program, programStartEvent, caipyData, programStart, detectBefore) {
     state ^= startOverState["sharpstart_before_program"].mask;
+
+    if (programStartEvent.index === -1) {
+        console.log("no caipy event found");
+        state ^= startOverState["startover_epg_time"].mask;
+        return [state, null];
+    }
     var sharpStartBeforeProgram = StartOver.searchSharpStartBeforeProgramStart(programStartEvent, caipyData, programStart, detectBefore);
 
     if (sharpStartBeforeProgram) {
+        console.log("sharpstart before program");
         state ^= startOverState["startover_sharpstart_before"].mask;
-        return [state, sharpStartBeforeProgram];
+        return [state, sharpStartBeforeProgram.event];
     } else {
+        console.log("no shartpstart before program");
         state ^= startOverState["startover_epg_time"].mask;
-        return [state, program];
+        return [state, null];
     }
 }
 
