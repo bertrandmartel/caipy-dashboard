@@ -11,17 +11,18 @@ cond1(no)->cond7
 cond7(no,bottom)->op5
 cond7(yes)->cond6
 
-cond6(no)->last
+cond6(no)->cond9
 cond6(yes)->op4
+cond9(no)->last
+cond9(yes)->op7
+
 last->cond8
 cond2(yes)->cond3
 cond2(no)->cond4
 cond3(no)->cond4
 cond3(yes)->op2
 cond4(no)->fail
-cond4(yes,right)->cond5
-cond5(yes,right)->op3
-cond5(no)->fail`;
+cond4(yes,right)->op3`;
 
 export const chartOptions = {
     width: 600,
@@ -87,86 +88,93 @@ export const startOverState = {
         type: 'condition',
         params: 'align-next=no'
     },
+    "ad_after_last_sharpstart": {
+        code: 'cond9',
+        mask: 0x000040,
+        text: 'Ad after \nlast sharpstart ?',
+        type: 'condition',
+        params: 'align-next=no'
+    },
+    "startover_ad_after_sharpstart2": {
+        code: 'op7',
+        mask: 0x000080,
+        text: 'startover = ad after SharpStart',
+        type: 'end',
+        params: ''
+    },
     "program_set_last": {
         code: 'last',
-        mask: 0x000040,
+        mask: 0x000100,
         text: 'program = last program',
         type: 'operation',
         params: ''
     },
     "program_set_current": {
         code: 'current',
-        mask: 0x000080,
+        mask: 0x000200,
         text: 'program = current program',
         type: 'operation',
         params: ''
     },
     "startover_set_ad_after_last_prog": {
         code: 'op4',
-        mask: 0x000100,
+        mask: 0x000400,
         text: 'startover = ad after last program end',
         type: 'end',
         params: ''
     },
     "event_at_program_start": {
         code: 'cond8',
-        mask: 0x000200,
+        mask: 0x000800,
         text: 'Event existing \n at program start ?',
         type: 'condition',
         params: 'align-next=no'
     },
     "no_event_at_program_start": {
         code: 'op6',
-        mask: 0x000400,
+        mask: 0x001000,
         text: 'startover = EPG program start (Caipy fail)',
         type: 'end',
         params: ''
     },
     "sharpstart_after_program_start": {
         code: 'cond2',
-        mask: 0x000800,
+        mask: 0x002000,
         text: 'SharpStart after \nprogram start ?',
         type: 'condition',
         params: ''
     },
     "ad_existing_after_program_start": {
         code: 'cond3',
-        mask: 0x001000,
+        mask: 0x004000,
         text: 'Ad existing after \nprogram start ?',
         type: 'condition',
         params: ''
     },
     "startover_after_program_start": {
         code: 'op2',
-        mask: 0x002000,
+        mask: 0x008000,
         text: 'startover = ad after program start',
         type: 'end',
         params: ''
     },
-    "sharpstart_before_program": {
+    "ad_before_program": {
         code: 'cond4',
-        mask: 0x004000,
-        text: 'SharpStart \nbefore program ?',
-        type: 'condition',
-        params: ''
-    },
-    "ad_after_previous_sharpstart": {
-        code: 'cond5',
-        mask: 0x008000,
-        text: 'Ad after previous \nSharpStart ?',
+        mask: 0x010000,
+        text: 'Ad before \nprogram ?',
         type: 'condition',
         params: ''
     },
     "startover_epg_program_start": {
         code: 'fail',
-        mask: 0x010000,
+        mask: 0x020000,
         text: 'startover = EPG program start',
         type: 'end',
         params: ''
     },
     "startover_ad_after_sharpstart": {
         code: 'op3',
-        mask: 0x020000,
+        mask: 0x040000,
         text: 'startover = ad after SharpStart',
         type: 'end',
         params: ''
@@ -202,7 +210,7 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
     //X : check program exist at current time
     if (program) {
         startover.state ^= startOverState["program_set_current"].mask;
-        [startover.state, startover.startover] = computeCurrentProgram(startover.state, program, caipyData, startOverDetectAd, startOverDetectSharpStart);
+        [startover.state, startover.startover] = computeCurrentProgram(startover.state, program, caipyData, startOverDetectAd, startOverDetectSharpStart, currentTime);
         startover.program = program;
     } else {
         console.log('[1] - program was not found');
@@ -213,8 +221,6 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
 
         if (lastProgram) {
             startover.state ^= startOverState["ad_after_last_program"].mask;
-            console.log(lastProgram);
-            console.log(new Date(lastProgram.end).getTime());
             var adAfterLastProgram = searchAdAfterTime(caipyData, new Date(lastProgram.end).getTime());
 
             if (adAfterLastProgram) {
@@ -224,10 +230,20 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
                 startover.startover = adAfterLastProgram;
                 startover.program = lastProgram;
             } else {
-                startover.state ^= startOverState["program_set_last"].mask;
-                console.log("[10] - no ad found after last program");
-                [startover.state, startover.startover] = computeCurrentProgram(startover.state, lastProgram, caipyData, startOverDetectAd, startOverDetectSharpStart);
-                startover.program = lastProgram;
+                startover.state ^= startOverState["ad_after_last_sharpstart"].mask;
+
+                var adAfterLastSharpstart = searchAdAfterSharpStart(caipyData, new Date(lastProgram.end).getTime() - startOverDetectSharpStart);
+                
+                if (adAfterLastSharpstart) {
+                    startover.state ^= startOverState["startover_ad_after_sharpstart2"].mask;
+                    startover.program = lastProgram;
+                    startover.startover = adAfterLastSharpstart;
+                } else {
+                    startover.state ^= startOverState["program_set_last"].mask;
+                    console.log("[10] - no ad found after last program");
+                    [startover.state, startover.startover] = computeCurrentProgram(startover.state, lastProgram, caipyData, startOverDetectAd, startOverDetectSharpStart);
+                    startover.program = lastProgram;
+                }
             }
         } else {
             startover.state ^= startOverState["epg_fail"].mask;
@@ -289,11 +305,11 @@ function searchAdAfterProgramStart(programStartEvent, caipyData, programStart, t
  * @param  {Number} programStart            program start in millis since 1970
  * @return {Object}                         Caipy event if ad found or null if not found
  */
-function searchAdAfterSharpStart(sharpStartBeforeProgram, caipyData, programStart) {
-    for (var i = sharpStartBeforeProgram.index; i >= 0; i--) {
+function searchAd(sharpStartBeforeProgram, caipyData, programStart, timeRange) {
+    for (var i = sharpStartBeforeProgram.index; i < caipyData.length; i++) {
         var startTime = new Date(caipyData[i].time).getTime();
-
-        if (startTime > programStart) {
+        var endTime = startTime + caipyData[i].duration * 1000;
+        if (endTime < (programStart - timeRange)) {
             return null;
         }
         if (caipyData[i].clip !== "SharpStart") {
@@ -303,20 +319,32 @@ function searchAdAfterSharpStart(sharpStartBeforeProgram, caipyData, programStar
     return null;
 }
 
+function searchAdAfterSharpStart(caipyData, periodEnd) {
+    var ad = null;
+    for (var i = 0; i < caipyData.length; i++) {
+        var startTime = new Date(caipyData[i].time).getTime();
+        var endTime = startTime + caipyData[i].duration * 1000;
+        if (endTime < periodEnd) {
+            return null;
+        }
+        if (ad !== null && caipyData[i].clip === "SharpStart") {
+            return ad;
+        } else {
+            ad = caipyData[i];
+        }
+    }
+}
+
 function searchAdAfterTime(caipyData, periodEnd) {
     var ad = null;
     for (var i = 0; i < caipyData.length; i++) {
         var startTime = new Date(caipyData[i].time).getTime();
         var endTime = startTime + caipyData[i].duration * 1000;
-        console.log(endTime + " et " + periodEnd);
         if (endTime < periodEnd) {
-            console.log(ad);
             return ad;
         }
         if (caipyData[i].clip !== "SharpStart") {
             ad = caipyData[i];
-            console.log("ok");
-            console.log(ad);
         }
     }
 }
@@ -329,39 +357,19 @@ function searchAdAfterTime(caipyData, periodEnd) {
  * @param  {Number} programStart      program start time in milliseconds since 1970
  * @param  {Number} startOverDetectSharpStart  startover detection settings : time range for looking for a SharpStart before start of program
  */
-function searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart) {
+function searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart, currentTime) {
 
-    var sharpStartBeforeProgram = StartOver.searchSharpStartBeforeProgramStart(programStartEvent, caipyData, programStart, startOverDetectSharpStart);
+    var adAfterSharpStart = searchAd(programStartEvent, caipyData, programStart, startOverDetectSharpStart);
 
-    if (sharpStartBeforeProgram) {
-        state ^= startOverState["ad_after_previous_sharpstart"].mask;
-        console.log("[0122] - Found a sharpstart before program start");
-
-        var adAfterSharpStart = searchAdAfterSharpStart(sharpStartBeforeProgram, caipyData, programStart);
-
-        if (adAfterSharpStart) {
-            state ^= startOverState["startover_ad_after_sharpstart"].mask;
-            console.log("[01222] - Found an ad after sharpstart");
-            console.log("[SUCCESS] - successfully found the StartOver");
-            return [state, adAfterSharpStart];
-        } else {
-            //state ^= startOverState["startover_epg_program_start2"].mask;
-            console.log("[01221] - [FAIL] Didn't found an ad after sharpstart");
-        }
+    if (adAfterSharpStart) {
+        state ^= startOverState["startover_ad_after_sharpstart"].mask;
+        console.log("[01222] - Found an ad after sharpstart");
+        console.log("[SUCCESS] - successfully found the StartOver");
+        return [state, adAfterSharpStart];
     } else {
-        /*
-        state ^= startOverState["current_sharpstart_too_early"].mask;
-
-        if (programStartEvent.clip === "SharpStart") {
-            console.log("check if shartpstart starts too early");
-        } else {
-            console.log("no sharpstart to start with");
-            state ^= startOverState["startover_epg_program_start2"].mask;
-        }
-        //check if current sharpstart if existing has not started too early otherwise it means that sharpstart belongs to last program
-        */
-        console.log("[0121] - [FAIL] Didn't found a sharpstart before program start");
+        console.log("[01221] - [FAIL] Didn't found an ad after sharpstart");
     }
+
     state ^= startOverState["startover_epg_program_start"].mask;
     return [state, null];
 }
@@ -374,7 +382,7 @@ function searchBeforeProgram(state, programStartEvent, caipyData, programStart, 
  * @param  {Number} startOverDetectAd          startover detection settings : time range for looking for ad after start of program
  * @param  {Number} startOverDetectSharpStart  startover detection settings : time range for looking for a SharpStart before start of program
  */
-function computeCurrentProgram(state, program, caipyData, startOverDetectAd, startOverDetectSharpStart) {
+function computeCurrentProgram(state, program, caipyData, startOverDetectAd, startOverDetectSharpStart, currentTime) {
 
     console.log("[0] - we do have a program");
 
@@ -405,13 +413,13 @@ function computeCurrentProgram(state, program, caipyData, startOverDetectAd, sta
             console.log("[SUCCESS] - successfully found the StartOver");
             return [state, adAfterProgram]
         } else {
-            state ^= startOverState["sharpstart_before_program"].mask;
+            state ^= startOverState["ad_before_program"].mask;
             console.log("[012] - Didn't found ad after program start");
-            return searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart);
+            return searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart, currentTime);
         }
     } else if (programStartEvent.index !== -1) {
-        state ^= startOverState["sharpstart_before_program"].mask;
+        state ^= startOverState["ad_before_program"].mask;
         console.log("[02] - we do have an ad or no event at all at the beginning of the program");
-        return searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart);
+        return searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart, currentTime);
     }
 }
