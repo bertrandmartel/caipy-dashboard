@@ -80,10 +80,10 @@ export const startOverState = {
         type: 'end',
         params: ''
     },
-    "ad_after_last_sharpstart": {
+    "ad_after_last_program": {
         code: 'cond6',
         mask: 0x000020,
-        text: 'Ad after \nlast sharpstart ?',
+        text: 'Ad after \nlast program ?',
         type: 'condition',
         params: 'align-next=no'
     },
@@ -212,8 +212,10 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
         var lastProgram = searchLastProgram(epgData, channel, currentTime);
 
         if (lastProgram) {
-            startover.state ^= startOverState["ad_after_last_sharpstart"].mask;
-            var adAfterLastProgram = searchAdAfterTime(caipyData, currentTime - startOverDetectSharpStart);
+            startover.state ^= startOverState["ad_after_last_program"].mask;
+            console.log(lastProgram);
+            console.log(new Date(lastProgram.end).getTime());
+            var adAfterLastProgram = searchAdAfterTime(caipyData, new Date(lastProgram.end).getTime());
 
             if (adAfterLastProgram) {
                 startover.state ^= startOverState["startover_set_ad_after_last_prog"].mask;
@@ -306,13 +308,15 @@ function searchAdAfterTime(caipyData, periodEnd) {
     for (var i = 0; i < caipyData.length; i++) {
         var startTime = new Date(caipyData[i].time).getTime();
         var endTime = startTime + caipyData[i].duration * 1000;
+        console.log(endTime + " et " + periodEnd);
         if (endTime < periodEnd) {
-            return null;
+            console.log(ad);
+            return ad;
         }
         if (caipyData[i].clip !== "SharpStart") {
             ad = caipyData[i];
-        } else if (caipyData[i].clip === "SharpStart" && ad !== null) {
-            return ad;
+            console.log("ok");
+            console.log(ad);
         }
     }
 }
