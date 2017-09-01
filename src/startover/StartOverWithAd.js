@@ -217,7 +217,7 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
         startover.state ^= startOverState["last_program_found"].mask;
 
         //search the last program
-        var lastProgram = searchLastProgram(epgData, channel, currentTime);
+        var lastProgram = StartOver.searchLastProgram(epgData, channel, currentTime);
 
         if (lastProgram) {
             startover.state ^= startOverState["ad_after_last_program"].mask;
@@ -251,26 +251,6 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
         }
     }
     return startover;
-}
-
-/**
- * Look for the last program in EPG
- * 
- * @param  {Object} epgData     EPG data
- * @param  {String} channel     channel name
- * @param  {Number} currentTime current time in millis
- * @return {Object}             program item or null if not found
- */
-function searchLastProgram(epgData, channel, currentTime) {
-    var lastProgram;
-    for (var j = 0; j < epgData.rows.length; j++) {
-        var start = new Date(epgData.rows[j].start).getTime();
-        if (currentTime < start) {
-            return (lastProgram ? lastProgram : null);
-        }
-        lastProgram = epgData.rows[j];
-    }
-    return null;
 }
 
 /**

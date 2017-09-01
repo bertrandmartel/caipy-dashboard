@@ -27,6 +27,26 @@ export function initCaipyData(caipyData, channel, currentTime) {
 }
 
 /**
+ * Look for the last program in EPG
+ * 
+ * @param  {Object} epgData     EPG data
+ * @param  {String} channel     channel name
+ * @param  {Number} currentTime current time in millis
+ * @return {Object}             program item or null if not found
+ */
+export function searchLastProgram(epgData, channel, currentTime) {
+    var lastProgram;
+    for (var j = 0; j < epgData.rows.length; j++) {
+        var start = new Date(epgData.rows[j].start).getTime();
+        if (currentTime < start) {
+            return (lastProgram ? lastProgram : null);
+        }
+        lastProgram = epgData.rows[j];
+    }
+    return null;
+}
+
+/**
  * Look for current program in EPG
  * 
  * @param  {Object} epgData     EPG data
