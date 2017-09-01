@@ -213,7 +213,6 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
         [startover.state, startover.startover] = computeCurrentProgram(startover.state, program, caipyData, startOverDetectAd, startOverDetectSharpStart, currentTime);
         startover.program = program;
     } else {
-        console.log('[1] - program was not found');
         startover.state ^= startOverState["last_program_found"].mask;
 
         //search the last program
@@ -225,8 +224,6 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
 
             if (adAfterLastProgram) {
                 startover.state ^= startOverState["startover_set_ad_after_last_prog"].mask;
-                console.log("[11] - found ad after last program");
-                console.log("[SUCCESS] - successfully found the StartOver");
                 startover.startover = adAfterLastProgram;
                 startover.program = lastProgram;
             } else {
@@ -240,14 +237,12 @@ export function computeWithAdStartover(time, caipyData, epgData, channel, startO
                     startover.startover = adAfterLastSharpstart;
                 } else {
                     startover.state ^= startOverState["program_set_last"].mask;
-                    console.log("[10] - no ad found after last program");
                     [startover.state, startover.startover] = computeCurrentProgram(startover.state, lastProgram, caipyData, startOverDetectAd, startOverDetectSharpStart);
                     startover.program = lastProgram;
                 }
             }
         } else {
             startover.state ^= startOverState["epg_fail"].mask;
-            console.log("[FAIL] - program not found. EPG down ?");
         }
     }
     return startover;
@@ -343,8 +338,6 @@ function searchBeforeProgram(state, programStartEvent, caipyData, programStart, 
 
     if (adAfterSharpStart) {
         state ^= startOverState["startover_ad_after_sharpstart"].mask;
-        console.log("[01222] - Found an ad after sharpstart");
-        console.log("[SUCCESS] - successfully found the StartOver");
         return [state, adAfterSharpStart];
     } else {
         console.log("[01221] - [FAIL] Didn't found an ad after sharpstart");
@@ -364,8 +357,6 @@ function searchBeforeProgram(state, programStartEvent, caipyData, programStart, 
  */
 function computeCurrentProgram(state, program, caipyData, startOverDetectAd, startOverDetectSharpStart, currentTime) {
 
-    console.log("[0] - we do have a program");
-
     var programStart = new Date(program.start).getTime();
 
     //look for the the type of event at the beginning of the TV program
@@ -375,31 +366,25 @@ function computeCurrentProgram(state, program, caipyData, startOverDetectAd, sta
 
     if (programStartEvent.index === -1) {
         state ^= startOverState["no_event_at_program_start"].mask;
-        console.log("no event have been found at program start");
         return [state, null];
     }
 
     state ^= startOverState["sharpstart_after_program_start"].mask;
     //0X : deal with sharpstart or ad/no event
     if (programStartEvent.clip === "SharpStart") {
-        console.log("[01] - we do have a sharpStart at the beginning of the program");
         state ^= startOverState["ad_existing_after_program_start"].mask;
         // 01X : search for ad after program start
         var adAfterProgram = searchAdAfterProgramStart(programStartEvent, caipyData, programStart, startOverDetectAd);
 
         if (adAfterProgram) {
             state ^= startOverState["startover_after_program_start"].mask;
-            console.log("[011] - Found an ad after program start");
-            console.log("[SUCCESS] - successfully found the StartOver");
             return [state, adAfterProgram]
         } else {
             state ^= startOverState["ad_before_program"].mask;
-            console.log("[012] - Didn't found ad after program start");
             return searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart, currentTime);
         }
     } else if (programStartEvent.index !== -1) {
         state ^= startOverState["ad_before_program"].mask;
-        console.log("[02] - we do have an ad or no event at all at the beginning of the program");
         return searchBeforeProgram(state, programStartEvent, caipyData, programStart, startOverDetectSharpStart, currentTime);
     }
 }
