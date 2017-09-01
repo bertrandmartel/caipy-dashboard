@@ -8,8 +8,11 @@ cond1(no,right)->cond5
 
 cond5(no,bottom)->op7
 cond5(yes)->cond6
-cond6(yes)->op6
-cond6(no,right)->last
+cond6(yes)->cond7
+
+cond7(yes)->op6
+cond7(no,bottom)->last
+cond6(no,botom)->last
 
 last->cond4
 
@@ -66,10 +69,17 @@ export const startOverState = {
         type: 'condition',
         params: 'align-next=no'
     },
-    "startover_sharpstart_after_program": {
+    "ad_before_sharpstart": {
+        code: 'cond7',
+        mask: 0x00020,
+        text: 'Ad before \nsharpstart ?',
+        type: 'condition',
+        params: 'align-next=no'
+    },
+    "startover_sharpstart_after_ad": {
         code: 'op6',
         mask: 0x00040,
-        text: 'startover = sharpstart after program',
+        text: 'startover = sharpstart after ad',
         type: 'end',
         params: ''
     },
@@ -171,10 +181,10 @@ export function computeWithoutAdStartover(time, caipyData, epgData, channel, det
             startover.state ^= startOverState["sharpstart_after_last_program"].mask;
             startover.program = lastProgram;
 
-            var sharpStartAfterProgram = searchSharpStartAfterTime(caipyData, new Date(lastProgram.end).getTime());
+            var sharpStartAfterProgram = searchAdAfterTime(caipyData, new Date(lastProgram.end).getTime() - detectBefore);
 
             if (sharpStartAfterProgram) {
-                startover.state ^= startOverState["startover_sharpstart_after_program"].mask;
+                startover.state ^= startOverState["startover_sharpstart_after_ad"].mask;
                 startover.startover = sharpStartAfterProgram;
             } else {
                 startover.state ^= startOverState["program_set_last"].mask;
@@ -215,7 +225,8 @@ function computeCurrentProgram(startover, caipyData, programStart, detectAfter) 
     return startover;
 }
 
-function searchSharpStartAfterTime(caipyData, periodEnd) {
+function searchAdAfterTime(caipyData, periodEnd) {
+    var event;
     for (var i = 0; i < caipyData.length; i++) {
         var startTime = new Date(caipyData[i].time).getTime();
         var endTime = startTime + caipyData[i].duration * 1000;
@@ -223,7 +234,10 @@ function searchSharpStartAfterTime(caipyData, periodEnd) {
             return null;
         }
         if (caipyData[i].clip === "SharpStart") {
-            return caipyData[i];
+            event = caipyData[i];
+        }
+        if (event !== null && caipyData[i].clip !== "SharpStart") {
+            return event;
         }
     }
 }
