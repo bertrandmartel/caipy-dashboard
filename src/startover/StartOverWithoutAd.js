@@ -226,7 +226,7 @@ function computeCurrentProgram(startover, caipyData, programStart, detectAfter) 
 }
 
 function searchAdAfterTime(caipyData, periodEnd) {
-    var event;
+    var event = null;
     for (var i = 0; i < caipyData.length; i++) {
         var startTime = new Date(caipyData[i].time).getTime();
         var endTime = startTime + caipyData[i].duration * 1000;
@@ -282,7 +282,7 @@ function searchAdAfterProgramStart(programStartEvent, caipyData, programStart, t
 
     for (var i = programStartEvent.index; i >= 0; i--) {
         var startTime = new Date(caipyData[i].time).getTime();
-        if (startTime > max) {
+        if (startTime > max && !(foundAd && caipyData[i].clip === "SharpStart")) {
             return null;
         }
         if (caipyData[i].clip !== "SharpStart") {
