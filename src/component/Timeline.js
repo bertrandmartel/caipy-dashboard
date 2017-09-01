@@ -316,7 +316,7 @@ export class TimelineContainer extends Component {
     }
 
     rollingTask() {
-        var nextTime = this.currentTime.getTime() + this.rollingPeriod * 60 * 1000;
+        var nextTime = this.currentTime.getTime() + this.rollingPeriod * 6 * 1000;
         this.setCustomTime(new Date(nextTime));
     }
 
@@ -325,7 +325,7 @@ export class TimelineContainer extends Component {
             clearInterval(this.rollingId);
         }
         if (!this.rolling) {
-            this.rollingId = setInterval(this.rollingTask, 500);
+            this.rollingId = setInterval(this.rollingTask, 100);
         }
         this.rolling = !this.rolling;
         this.props.onPlayRolling();
