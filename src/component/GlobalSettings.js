@@ -20,7 +20,7 @@ window.$ = window.jQuery = require('jquery');
  */
 export class GlobalSettingsView extends Component {
 
-   container = {
+    container = {
         data: {
             windowSize: 0,
             startOverDetectAd: 0,
@@ -166,11 +166,7 @@ export class GlobalSettingsView extends Component {
      */
     updateDurationValue(type, data) {
         var resp = this.container;
-        resp.data[type] = {
-            hour: data.data.hour,
-            minutes: data.data.minutes,
-            seconds: data.data.seconds
-        };
+        resp.data[type] = data.data.hour * 60 * 60 * 1000 + data.data.minutes * 60 * 1000 + data.data.seconds * 1000;
         resp.style[type] = data.style;
         this.props.onRefreshGlobalSettingsView(resp);
         //this.setState(resp);
