@@ -1,19 +1,28 @@
-//react
-import React, { Component } from 'react';
+/* eslint-disable flowtype/require-valid-file-annotation */
 
-//react components
-import { Modal, Button } from 'react-materialize';
+import React, { Component } from 'react';
+import Button from 'material-ui/Button';
+import Dialog, {
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+} from 'material-ui/Dialog';
+import PropTypes from 'prop-types';
+import { withStyles } from 'material-ui/styles';
 
 import Flowchart from './FlowChart.js';
 
-// jquery
-import $ from 'jquery';
-window.$ = window.jQuery = require('jquery');
+const styles = theme => ({
+    dialog: {
+        maxWidth: 900,
+        width: '100%'
+    }
+});
 
 /**
  * FlowChart view
  */
-export class FlowChartView extends Component {
+class FlowChartView extends Component {
 
     chartParams = {
         code: "",
@@ -23,20 +32,24 @@ export class FlowChartView extends Component {
     opacity = false;
     created = false;
 
-    componentDidMount(){
+    constructor(props) {
+        super(props);
+        this.close = this.close.bind(this);
+    }
+
+    componentDidMount() {
         this.opacity = this.props.flowChartOpacity;
         this.setOpacity();
     }
 
-    /**
-     * Close the modal
-     *
-     */
     close() {
-        $('#flowchart-modal').modal('close');
-    }
+        if (typeof this.props.onDialogClose === 'function') {
+            this.props.onDialogClose();
+        }
+    };
 
     setOpacity() {
+        /*
         //waiting for react materialize to implement className on modal
         if (!this.opacity) {
             $('#flowchart-modal').css('background-color', 'rgba(255, 255, 255, 0.5)');
@@ -45,6 +58,7 @@ export class FlowChartView extends Component {
         }
         this.props.onSetFlowChartOpacity(this.opacity);
         this.opacity = !this.opacity;
+        */
     }
 
     /**
@@ -63,6 +77,43 @@ export class FlowChartView extends Component {
         if (this.props.chartOptions) {
             this.chartParams.chartOptions = this.props.chartOptions;
         }
+
+        if (this.created || this.props.state === "create") {
+
+            this.created = true;
+
+            return <div>
+                    <Dialog 
+                        open={this.props.open} 
+                        onRequestClose={this.close}>
+                        <DialogTitle>{'Start Over Flowchart : ' + this.props.startoverType}</DialogTitle>
+                        <DialogContent>
+                          <Flowchart
+                                
+                                chartCode={this.chartParams.chartCode}
+                                options={this.chartParams.chartOptions}
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => this.setOpacity()}>Toggle opacity</Button>   
+                          <Button onClick={() => this.close()}>Close</Button>
+                        </DialogActions>
+                    </Dialog>
+                </div>
+        } else {
+            return <div>
+                    <Dialog open={this.props.open} onRequestClose={this.close}>
+                        <DialogTitle>{'Start Over Flowchart : ' + this.props.startoverType}</DialogTitle>
+                        <DialogContent>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => this.setOpacity()}>Toggle opacity</Button>   
+                          <Button onClick={() => this.close()}>Close</Button>
+                        </DialogActions>
+                    </Dialog>
+                </div>
+        }
+        /*
         if (this.created || this.props.state === "create") {
             
             this.created = true;
@@ -96,5 +147,12 @@ export class FlowChartView extends Component {
                     >
                 </Modal>
         }
+        */
     }
 }
+
+FlowChartView.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(FlowChartView);

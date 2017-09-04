@@ -1,7 +1,8 @@
 //style
 import 'vis/dist/vis.css';
 //import 'materialize-css/dist/css/materialize.min.css';
-import './css/MaterialColor.css';
+//import './css/MaterialColor.css';
+import './css/Footer.css';
 import './css/Timeline.css';
 import './css/App.css';
 
@@ -10,16 +11,17 @@ import moment from 'moment';
 //react
 import React, { Component } from 'react';
 
-//react materialize components
-import { Footer, Row, Col, Preloader } from 'react-materialize';
+import { createMuiTheme, MuiThemeProvider } from 'material-ui/styles';
+
+import ProgressView from './component/ProgressView.js';
 
 // other react components
 import { FilterView } from './component/Filter.js';
-import { GlobalSettingsView } from './component/GlobalSettings.js'
-import { UrlSettingsView } from './component/UrlSettings.js';
-import { TabCollection } from './component/TabCollection.js';
-import { TopNavbar } from './component/TopNavbar.js';
-import { FlowChartView } from './component/FlowChartModal.js';
+import GlobalSettingsView from './component/GlobalSettings.js'
+import UrlDialog from './component/UrlDialog.js';
+import SectionTabs from './component/SectionTabs.js';
+import TopNavbar from './component/TopNavbar.js';
+import FlowChartView from './component/FlowChartModal.js';
 
 //utility for Caipy (parse JSON data)
 import * as ApiUtils from './api/CaipyApi.js';
@@ -31,11 +33,13 @@ import * as Constant from './constants/Constant.js';
 //import utils 
 import * as Utils from './utils/Utils.js';
 
-// jquery
-import $ from 'jquery';
-window.$ = window.jQuery = require('jquery');
-
 require('materialize-css/dist/js/materialize.min.js');
+
+const theme = createMuiTheme({
+    palette: {
+        type: 'light', // Switching the dark mode on is a single property value change.
+    },
+});
 
 /**
  * Main app component
@@ -61,7 +65,8 @@ class App extends Component {
         message: "",
         options: this.options,
         startDate: this.date.startDate,
-        endDate: this.date.endDate
+        endDate: this.date.endDate,
+        openUrlDialog: false
     };
 
     /**
@@ -140,6 +145,10 @@ class App extends Component {
         dropProgram: Constant.cutProgramDuration
     };
 
+    urlDialog = false;
+    settingsDialog = false;
+    flowchartDialog = false;
+
     constructor() {
         super();
         this.initStorage();
@@ -159,6 +168,9 @@ class App extends Component {
         this.share = this.share.bind(this);
         this.updateOptions = this.updateOptions.bind(this);
         this.refreshGlobalSettingsView = this.refreshGlobalSettingsView.bind(this);
+        this.openUrlSettings = this.openUrlSettings.bind(this);
+        this.openSettings = this.openSettings.bind(this);
+        this.closeDialog = this.closeDialog.bind(this);
         this.initPreset();
     }
 
@@ -554,10 +566,27 @@ class App extends Component {
     }
 
     openFlowChart() {
-        $('#flowchart-modal').modal('open');
+        this.flowchartDialog = true;
         this.startover = {
             state: "create"
         };
+        this.updateState("tools");
+    }
+
+    openUrlSettings() {
+        this.urlDialog = true;
+        this.updateState("tools");
+    }
+
+    openSettings() {
+        this.settingsDialog = true;
+        this.updateState("tools");
+    }
+
+    closeDialog() {
+        this.urlDialog = false;
+        this.settingsDialog = false;
+        this.flowchartDialog = false;
         this.updateState("tools");
     }
 
@@ -619,99 +648,80 @@ class App extends Component {
 
     render() {
         return (
-            <div className="body">
-                <div className="main">
+            <MuiThemeProvider theme={theme}>
+                <div className="body">
+                    <div className="main">
 
-                    <TopNavbar mode={this.state.mode}
-                               onShare={this.share}/>
+                        <TopNavbar mode={this.state.mode}
+                                   onShare={this.share}
+                                   onOpenUrlSettings={this.openUrlSettings}
+                                   onOpenSettings={this.openSettings}/>
 
-                    <FilterView onSetFilterSettings={this.setFilterSettings}
-                                onPresetChange={this.setPreset}
-                                onChannelChange={this.setChannel}
-                                onStartOverChange={this.setStartOverType}
-                                mode={this.state.mode}
-                                startDate={this.date.startDate}
-                                endDate={this.date.endDate}
-                                presets={this.presets}
-                                startover={this.startoverType}
-                                startovers={this.startovers}
-                                channels={this.channels}
-                                preset={this.preset}
-                                channel={this.channel}/>
+                        <FilterView onSetFilterSettings={this.setFilterSettings}
+                                    onPresetChange={this.setPreset}
+                                    onChannelChange={this.setChannel}
+                                    onStartOverChange={this.setStartOverType}
+                                    mode={this.state.mode}
+                                    startDate={this.date.startDate}
+                                    endDate={this.date.endDate}
+                                    presets={this.presets}
+                                    startover={this.startoverType}
+                                    startovers={this.startovers}
+                                    channels={this.channels}
+                                    preset={this.preset}
+                                    channel={this.channel}/>
 
-                    <TabCollection ready={this.state.ready} 
-                                   items={this.state.items} 
-                                   caipyData={this.state.caipyData}
-                                   epgData={this.state.epgData}
-                                   actionType={this.state.actionType}
-                                   options={this.options}
-                                   settings={this.settings}
-                                   onPlayRolling={this.playRolling}
-                                   onPauseRolling={this.pauseRolling}
-                                   onSetStartOverChart={this.setStartOverChart}
-                                   keepCurrentWindow={this.state.keepCurrentWindow}
-                                   onOpenFlowChart={this.openFlowChart}
-                                   onUpdateOptions={this.updateOptions}
-                                   overrideOptions={this.state.overrideOptions}
-                                   startover={this.startoverType}
-                                   />
+                        <SectionTabs ready={this.state.ready} 
+                                       items={this.state.items} 
+                                       caipyData={this.state.caipyData}
+                                       epgData={this.state.epgData}
+                                       actionType={this.state.actionType}
+                                       options={this.options}
+                                       settings={this.settings}
+                                       onPlayRolling={this.playRolling}
+                                       onPauseRolling={this.pauseRolling}
+                                       onSetStartOverChart={this.setStartOverChart}
+                                       keepCurrentWindow={this.state.keepCurrentWindow}
+                                       onOpenFlowChart={this.openFlowChart}
+                                       onUpdateOptions={this.updateOptions}
+                                       overrideOptions={this.state.overrideOptions}
+                                       startover={this.startoverType}
+                                       />
 
-                    <ProgressView value={this.state.ready}
-                                  message={this.state.message}/>
+                        <ProgressView value={this.state.ready}
+                                      message={this.state.message}/>
 
-                    <UrlSettingsView mode={this.state.mode}
-                                  url={this.state.url}
-                                  onSetUrlSettings={this.setUrlSettings}
-                                  onSetMode={this.setMode}/>
+                        <UrlDialog mode={this.state.mode}
+                                      url={this.state.url}
+                                      open={this.urlDialog}
+                                      onSetUrlSettings={this.setUrlSettings}
+                                      onSetMode={this.setMode}
+                                      onDialogClose={this.closeDialog}/>
 
-                    <GlobalSettingsView 
-                                  settings={this.settings}
-                                  settingsStyle={this.settingsStyle}
-                                  onGlobalSettings={this.updateGlobalSettings}
-                                  onRefreshGlobalSettingsView={this.refreshGlobalSettingsView}/>
+                        <GlobalSettingsView 
+                                      settings={this.settings}
+                                      settingsStyle={this.settingsStyle}
+                                      onGlobalSettings={this.updateGlobalSettings}
+                                      onRefreshGlobalSettingsView={this.refreshGlobalSettingsView}
+                                      onDialogClose={this.closeDialog}
+                                      open={this.settingsDialog}/>
 
-                    <FlowChartView 
-                        flowChartOpacity={this.flowChartOpacity}
-                        state={this.startover.state}
-                        chartCode={this.startover.chartCode}
-                        chartOptions={this.startover.chartOptions}
-                        onSetFlowChartOpacity={this.setFlowChartOpacity}
-                        startoverType={this.startoverType}/>
-                </div>
-                <FooterView/>
-             </div>
+                        <FlowChartView 
+                            flowChartOpacity={this.flowChartOpacity}
+                            state={this.startover.state}
+                            chartCode={this.startover.chartCode}
+                            chartOptions={this.startover.chartOptions}
+                            onSetFlowChartOpacity={this.setFlowChartOpacity}
+                            startoverType={this.startoverType}
+                            onDialogClose={this.closeDialog}
+                            open={this.flowchartDialog}/>
+                    </div>                    
+                    <div className="footer-copyright">
+                        <a href="https://github.com/bertrandmartel" rel="noopener noreferrer" target="_blank">Copyright (c) 2017 Bertrand Martel</a>
+                    </div>
+                 </div>
+             </MuiThemeProvider>
         );
     }
 }
-
-/**
- * Footer component
- */
-class FooterView extends Component {
-    render() {
-        return <Footer className='white-text footer blue darken-1' 
-                       moreLinks={
-                            <div>
-                            <a className="white-text center" href="https://github.com/bertrandmartel" rel="noopener noreferrer" target="_blank">
-                            Copyright (c) 2017 Bertrand Martel</a>
-                             </div>
-                         }>
-                </Footer>
-    }
-}
-
-/**
- * View showing a Loader in the middle of the screen
- */
-class ProgressView extends Component {
-    render() {
-        return <Row className={this.props.value ? "center-div hidden" : "center-div"}>
-                    <Col s={12}>
-                        <Preloader size="big" color="blue"/>
-                    </Col>
-                    <p className="error-message">{this.props.message}</p>
-                </Row>
-    }
-}
-
 export default App;

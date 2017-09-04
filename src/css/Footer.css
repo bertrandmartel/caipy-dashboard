@@ -1,0 +1,14 @@
+.footer-copyright {
+    text-align: center;
+    background-color: #1e88e5;
+}
+
+.footer-copyright a {
+    height: 50px;
+    width: 100%;
+    display: block;
+    text-align: center;
+    display: table-cell;
+    vertical-align: middle;
+    color: white;
+}

@@ -1,10 +1,25 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { withStyles } from 'material-ui/styles';
+import IconButton from 'material-ui/IconButton';
+
+
+import KeyboardArrowLeft from 'material-ui-icons/KeyboardArrowLeft';
+import KeyboardArrowRight from 'material-ui-icons/KeyboardArrowRight';
+import ZoomIn from 'material-ui-icons/ZoomIn';
+import ZoomOut from 'material-ui-icons/ZoomOut';
+import ClearAll from 'material-ui-icons/ClearAll';
+import FastForward from 'material-ui-icons/FastForward';
+import FastRewind from 'material-ui-icons/FastRewind';
+import PlayArrow from 'material-ui-icons/PlayArrow';
+import Stop from 'material-ui-icons/Stop';
+import Timeline from 'material-ui-icons/Timeline';
+
+import Toolbar from 'material-ui/Toolbar';
+
 import ReactDOM from 'react-dom';
 import moment from 'moment';
 import vis from 'vis';
-
-//react materialize components
-import { Button, Icon } from 'react-materialize';
 
 //import StartOver functions
 import * as StartOverWithAd from '../startover/StartOverWithAd.js';
@@ -18,10 +33,20 @@ import * as StartOverCommon from '../startover/StartOverCommon.js';
 //constant id for start over item in timeline
 const startOverId = "startOverId";
 
+const styles = theme => ({
+    button: {},
+    hidden: {
+        display: 'none',
+    },
+    toolbar: {
+        backgroundColor: theme.palette.primary["50"]
+    }
+});
+
 /**
  * The Timeline object used to render a vis.js timeline
  */
-export class TimelineContainer extends Component {
+class TimelineContainer extends Component {
 
     date = {
         start: "",
@@ -414,23 +439,45 @@ export class TimelineContainer extends Component {
     }
 
     render() {
+        const classes = this.props.classes;
+
         return <div className="timeline-tools">
 
                     <div className="timeline-object">
-                    
-                        <div className="pull-right">
-                            <Button waves='light' onClick={() => this.moveLeft()} className="blue darken-1 tools"><Icon small>keyboard_arrow_left</Icon></Button>
-                            <Button waves='light' onClick={() => this.moveRight()} className="blue darken-1 tools"><Icon small>keyboard_arrow_right</Icon></Button>
-                            <Button waves='light' onClick={() => this.zoomIn()} className="blue darken-1 tools"><Icon small>zoom_in</Icon></Button>
-                            <Button waves='light' onClick={() => this.zoomOut()} className="blue darken-1 tools"><Icon small>zoom_out</Icon></Button>
-                            <Button waves='light' onClick={() => this.stackToggle()} className="blue darken-1 tools"><Icon small>clear_all</Icon></Button>
-                            <Button waves='light' onClick={() => this.slowerRolling()} className="blue darken-1 tools"><Icon small>fast_rewind</Icon></Button>
-                            <Button waves='light' onClick={() => this.playRolling()} className={ this.rolling ? "hidden" : "blue darken-1 tools"}><Icon small>play_arrow</Icon></Button>
-                            <Button waves='light' onClick={() => this.pauseRolling()} className={ this.rolling ? "blue darken-1 tools" : "hidden"}><Icon small>stop</Icon></Button>
-                            <Button waves='light' onClick={() => this.fasterRolling()} className="blue darken-1 tools"><Icon small>fast_forward</Icon></Button>
-                            <Button waves='light' onClick={() => this.openTree()} className="blue darken-1 tools"><Icon small>timeline</Icon></Button>
-                        </div>
-
+                        { 
+                            <Toolbar disableGutters className={classes.toolbar}>
+                                <IconButton className={classes.button}  onClick={() => this.moveLeft()}>
+                                    <KeyboardArrowLeft />
+                                </IconButton>
+                                <IconButton className={classes.button}  onClick={() => this.moveRight()}>
+                                    <KeyboardArrowRight />
+                                </IconButton>
+                                <IconButton className={classes.button}  onClick={() => this.zoomIn()}>
+                                    <ZoomIn />
+                                </IconButton>
+                                <IconButton className={classes.button}  onClick={() => this.zoomOut()}>
+                                    <ZoomOut />
+                                </IconButton>
+                                <IconButton className={classes.button}  onClick={() => this.stackToggle()}>
+                                    <ClearAll />
+                                </IconButton>
+                                <IconButton className={classes.button}  onClick={() => this.slowerRolling()}>
+                                    <FastRewind />
+                                </IconButton>
+                                <IconButton className={ this.rolling ? classes.hidden : classes.button} onClick={() => this.playRolling()}>
+                                    <PlayArrow />
+                                </IconButton>
+                                <IconButton className={ this.rolling ? classes.button : classes.hidden}  onClick={() => this.pauseRolling()}>
+                                    <Stop />
+                                </IconButton>
+                                <IconButton className={classes.button}  onClick={() => this.fasterRolling()}>
+                                    <FastForward />
+                                </IconButton>
+                                <IconButton className={classes.button}  onClick={() => this.openTree()}>
+                                    <Timeline />
+                                </IconButton>
+                            </Toolbar>
+                        }
                         <div className="timeline-container" id={this.props.data.channelName}></div>
                     </div>
                
@@ -461,3 +508,9 @@ class ItemTemplate extends React.Component {
             </div>
     }
 }
+
+TimelineContainer.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(TimelineContainer);

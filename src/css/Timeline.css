@@ -1,11 +1,6 @@
 /**
  * This file contains essentialy vis.js timeline customized style 
  */
-
-.timeline-tools {
-    margin-top: 70px;
-}
-
 .startover-group {
     height: 100px;
     min-height: 100px;
@@ -16,9 +11,7 @@
 }
 
 .timeline-object {
-    margin: 15px;
     margin-top: 30px;
-    margin-bottom: 10px;
 }
 
 .vis-timeline {
