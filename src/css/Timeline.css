@@ -2,6 +2,11 @@
  * This file contains essentialy vis.js timeline customized style 
  */
 
+/* hand cursor when selecting time bar */
+.vis-custom-time {
+    cursor : pointer;
+}
+
 .timeline-tools {
     margin-top: 70px;
 }
