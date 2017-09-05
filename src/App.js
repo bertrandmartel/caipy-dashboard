@@ -140,6 +140,10 @@ class App extends Component {
         dropProgram: Constant.cutProgramDuration
     };
 
+    //temp value for checking if value has changed
+    windowSizeTemp = 0;
+    dropProgramTemp = 0;
+
     constructor() {
         super();
         this.initStorage();
@@ -215,6 +219,8 @@ class App extends Component {
         this.settings.startOverDetectAd = Storage.getStartOverRangeAd();
         this.settings.startOverDetectSharpStart = Storage.getStartOverRangeSharpStart();
         this.settings.windowSize = Storage.getWindowInitSize();
+        this.windowSizeTemp = this.settings.windowSize;
+        this.dropProgramTemp = this.settings.dropProgram;
 
         //filter date
         this.date.startDate = Storage.getStartDate();
@@ -508,12 +514,15 @@ class App extends Component {
 
         var update = false;
 
-        if (settings.windowSize !== this.settings.windowSize) {
+        if (settings.windowSize !== this.windowSizeTemp) {
             //update options and update the window
             nextState = "options-global";
+            this.windowSizeTemp = settings.windowSize;
         }
-        if (settings.dropProgram !== this.settings.dropProgram) {
+
+        if (settings.dropProgram !== this.dropProgramTemp) {
             update = true;
+            this.dropProgramTemp = settings.dropProgram;
         }
 
         this.settings = JSON.parse(JSON.stringify(settings));
