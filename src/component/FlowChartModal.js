@@ -1,51 +1,49 @@
-//react
-import React, { Component } from 'react';
+/* eslint-disable flowtype/require-valid-file-annotation */
 
-//react components
-import { Modal, Button } from 'react-materialize';
+import React, { Component } from 'react';
+import Dialog, {
+    DialogContent,
+    DialogTitle,
+} from 'material-ui/Dialog';
+import PropTypes from 'prop-types';
+import { withStyles } from 'material-ui/styles';
+import Slide from 'material-ui/transitions/Slide';
+import AppBar from 'material-ui/AppBar';
+import Toolbar from 'material-ui/Toolbar';
+import IconButton from 'material-ui/IconButton';
+import Typography from 'material-ui/Typography';
+import CloseIcon from 'material-ui-icons/Close';
 
 import Flowchart from './FlowChart.js';
 
-// jquery
-import $ from 'jquery';
-window.$ = window.jQuery = require('jquery');
+const styles = theme => ({
+    title: {
+        margin: '0 auto'
+    }
+});
 
 /**
  * FlowChart view
  */
-export class FlowChartView extends Component {
+class FlowChartView extends Component {
 
     chartParams = {
         code: "",
         options: {}
     };
 
-    opacity = false;
     created = false;
 
-    componentDidMount(){
-        this.opacity = this.props.flowChartOpacity;
-        this.setOpacity();
+    constructor(props) {
+        super(props);
+        this.close = this.close.bind(this);
     }
 
-    /**
-     * Close the modal
-     *
-     */
     close() {
-        $('#flowchart-modal').modal('close');
-    }
-
-    setOpacity() {
-        //waiting for react materialize to implement className on modal
-        if (!this.opacity) {
-            $('#flowchart-modal').css('background-color', 'rgba(255, 255, 255, 0.5)');
-        } else {
-            $('#flowchart-modal').css('background-color', 'rgba(255, 255, 255, 255)');
+        if (typeof this.props.onDialogClose === 'function') {
+            this.props.onDialogClose();
         }
-        this.props.onSetFlowChartOpacity(this.opacity);
-        this.opacity = !this.opacity;
-    }
+    };
 
     /**
      * handle the enter key
@@ -57,44 +55,61 @@ export class FlowChartView extends Component {
     }
 
     render() {
+        const { classes } = this.props;
+
         if (this.props.chartCode) {
             this.chartParams.chartCode = this.props.chartCode;
         }
         if (this.props.chartOptions) {
             this.chartParams.chartOptions = this.props.chartOptions;
         }
+
         if (this.created || this.props.state === "create") {
-            
+
             this.created = true;
 
-            return <Modal
-                    fixedFooter
-                    id="flowchart-modal"
-                    header={'Start Over Flowchart : ' + this.props.startoverType}
-                    actions={
-                        <div>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.setOpacity()}>Toggle opacity</Button>
-                        </div>
-                    }
-                    >
-                    <Flowchart
-                        chartCode={this.chartParams.chartCode}
-                        options={this.chartParams.chartOptions}
-                    />
-                </Modal>
+            return <div>
+                    <Dialog 
+                        fullScreen
+                        open={this.props.open} 
+                        onRequestClose={this.close}
+                        transition={<Slide direction="up" />}>
+                        <AppBar className={classes.appBar}>
+                            <Toolbar>
+                              <IconButton color="contrast" onClick={this.close} aria-label="Close">
+                                <CloseIcon />
+                              </IconButton>
+                              <Typography type="title" color="inherit" className={classes.flex}>
+                                Close
+                              </Typography>
+                              <Typography type="title" color="inherit" className={classes.title}>
+                                {'Start Over Flowchart : ' + this.props.startoverType}
+                              </Typography>
+                            </Toolbar>
+                        </AppBar>
+                        <DialogTitle>{'Start Over Flowchart : ' + this.props.startoverType}</DialogTitle>
+                        <DialogContent>
+                          <Flowchart
+                                chartCode={this.chartParams.chartCode}
+                                options={this.chartParams.chartOptions}
+                            />
+                        </DialogContent>
+                    </Dialog>
+                </div>
         } else {
-            return <Modal
-                    fixedFooter
-                    id="flowchart-modal"
-                    header='Start Over flowchart'
-                    actions={
-                        <div>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>
-                        </div>
-                    }
-                    >
-                </Modal>
+            return <div>
+                    <Dialog fullScreen open={this.props.open} onRequestClose={this.close} transition={<Slide direction="up" />}>
+                        <DialogTitle>{'Start Over Flowchart : ' + this.props.startoverType}</DialogTitle>
+                        <DialogContent>
+                        </DialogContent>
+                    </Dialog>
+                </div>
         }
     }
 }
+
+FlowChartView.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(FlowChartView);

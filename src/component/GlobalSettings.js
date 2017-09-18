@@ -1,8 +1,18 @@
-//react
 import React, { Component } from 'react';
+import Button from 'material-ui/Button';
+import Dialog, {
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+} from 'material-ui/Dialog';
+import Grid from 'material-ui/Grid';
+import Typography from 'material-ui/Typography';
+import PropTypes from 'prop-types';
+import { withStyles } from 'material-ui/styles';
+import List, { ListItem, ListItemSecondaryAction, ListItemText } from 'material-ui/List';
 
 //react components
-import { Modal, Button, Row, Col, Section } from 'react-materialize';
+//import { Modal, Button, Row, Col, Section } from 'react-materialize';
 
 //import constant values
 import * as Constant from '../constants/Constant.js';
@@ -11,14 +21,23 @@ import * as ApiUtils from '../api/CaipyApi.js';
 
 import { DurationPicker } from './DurationPicker.js';
 
-// jquery
-import $ from 'jquery';
-window.$ = window.jQuery = require('jquery');
+const styles = theme => ({
+    root: {},
+    title: {
+        margin: `${theme.spacing.unit * 4}px 0 ${theme.spacing.unit * 2}px`,
+    },
+    dialogContent: {
+        width: 600
+    },
+    listItem: {
+        height:70
+    }
+});
 
 /**
  * Open Global settings view
  */
-export class GlobalSettingsView extends Component {
+class GlobalSettingsView extends Component {
 
     container = {
         data: {
@@ -48,13 +67,13 @@ export class GlobalSettingsView extends Component {
         this.validateSettings = this.validateSettings.bind(this);
         this.updateDurationValue = this.updateDurationValue.bind(this);
         this.onValueChange = this.onValueChange.bind(this);
+        this.close = this.close.bind(this);
     }
 
     close() {
-        this.setState({
-            message: ""
-        });
-        $('#global-settings').modal('close');
+        if (typeof this.props.onDialogClose === 'function') {
+            this.props.onDialogClose();
+        }
     }
 
     componentDidMount() {
@@ -138,6 +157,8 @@ export class GlobalSettingsView extends Component {
         this.data["dropProgram"] = Constant.cutProgramDuration;
 
         this.props.onRefreshGlobalSettingsView(resp);
+        this.validateSettings();
+        this.close();
         //this.setState(resp);
     }
 
@@ -173,11 +194,103 @@ export class GlobalSettingsView extends Component {
     }
 
     render() {
+        const classes = this.props.classes;
+
         var windowSize = ApiUtils.convertMillisToDuration(this.container.data.windowSize);
         var startOverDetectAd = ApiUtils.convertMillisToDuration(this.container.data.startOverDetectAd);
         var startOverDetectSharpStart = ApiUtils.convertMillisToDuration(this.container.data.startOverDetectSharpStart);
         var dropProgram = ApiUtils.convertMillisToDuration(this.container.data.dropProgram);
 
+        return <div className={classes.root}>
+                    <Dialog open={this.props.open} onRequestClose={this.close}>
+                        <DialogTitle>{"Settings"}</DialogTitle>
+                        <DialogContent>
+                            <div>
+                              <Grid item xs={12} className={classes.dialogContent}>
+                                <Typography type="title" className={classes.title}>
+                                  General
+                                </Typography>
+                                <div>
+                                  <List>
+                                      <ListItem className={classes.listItem}>
+                                        <ListItemText primary="Timeline window" />
+                                        <ListItemSecondaryAction>
+                                            <DurationPicker 
+                                                    className='duration-picker'
+                                                    style={this.container.style.windowSize}
+                                                    name='windowSize'
+                                                    hour={windowSize.hour} 
+                                                    minutes={windowSize.minutes} 
+                                                    seconds={windowSize.seconds}
+                                                    onChange={this.onValueChange}
+                                                    onUpdateValue={this.updateDurationValue}
+                                                />
+                                        </ListItemSecondaryAction>
+                                      </ListItem>
+                                  </List>
+                                </div>
+                              </Grid>
+                              <Grid item xs={12}>
+                                <Typography type="title" className={classes.title}>
+                                  Start Over
+                                </Typography>
+                                <div>
+                                  <List>
+                                      <ListItem className={classes.listItem} divider>
+                                        <ListItemText primary="Detect event after" />
+                                        <ListItemSecondaryAction>
+                                            <DurationPicker className='duration-picker' 
+                                                name='startOverDetectAd'
+                                                style={this.container.style.startOverDetectAd}
+                                                hour={startOverDetectAd.hour} 
+                                                minutes={startOverDetectAd.minutes} 
+                                                seconds={startOverDetectAd.seconds}
+                                                onChange={this.onValueChange}
+                                                onUpdateValue={this.updateDurationValue}
+                                            />
+                                        </ListItemSecondaryAction>
+                                      </ListItem>
+                                      <ListItem className={classes.listItem} divider>
+                                        <ListItemText primary="Detect event before" />
+                                        <ListItemSecondaryAction>
+                                            <DurationPicker className='duration-picker' 
+                                                name='startOverDetectSharpStart' 
+                                                style={this.container.style.startOverDetectSharpStart}
+                                                hour={startOverDetectSharpStart.hour} 
+                                                minutes={startOverDetectSharpStart.minutes} 
+                                                seconds={startOverDetectSharpStart.seconds}
+                                                onChange={this.onValueChange}
+                                                onUpdateValue={this.updateDurationValue}
+                                            />
+                                        </ListItemSecondaryAction>
+                                      </ListItem>
+                                      <ListItem className={classes.listItem}>
+                                        <ListItemText primary="Drop program lower than" />
+                                        <ListItemSecondaryAction>
+                                            <DurationPicker className='duration-picker' 
+                                                name='dropProgram' 
+                                                style={this.container.style.dropProgram}
+                                                hour={dropProgram.hour} 
+                                                minutes={dropProgram.minutes} 
+                                                seconds={dropProgram.seconds}
+                                                onChange={this.onValueChange}
+                                                onUpdateValue={this.updateDurationValue}
+                                            />
+                                        </ListItemSecondaryAction>
+                                      </ListItem>
+                                  </List>
+                                </div>
+                              </Grid>
+                            </div>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => this.close()}>Close</Button>
+                          <Button onClick={() => this.resetSettings()}>Reset to default</Button> 
+                          <Button onClick={() => this.validateSettings()}>OK</Button>   
+                        </DialogActions>
+                    </Dialog>
+                </div>
+        /*
         return <Modal
                     id="global-settings"
                     header='Settings'
@@ -256,5 +369,12 @@ export class GlobalSettingsView extends Component {
                             </Section>
                         </div>
                 </Modal>
+        */
     }
 }
+
+GlobalSettingsView.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(GlobalSettingsView);

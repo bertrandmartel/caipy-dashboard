@@ -144,6 +144,9 @@ export function getPrograms(url, channel, startDate, stopDate, cutDuration, cb) 
             cb(null, {
                 program: epgItems
             }, programData);
+        })
+        .catch(function(err) {
+            cb(err, null);
         });
 }
 

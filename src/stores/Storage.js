@@ -79,7 +79,7 @@ export function getFlowChartOpacity() {
 }
 
 export function getStartOverType() {
-    return getItem("startOverType", "with advertisement");
+    return getItem("startOverType", "with ad");
 }
 
 export function getType() {

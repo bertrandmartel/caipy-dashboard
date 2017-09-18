@@ -1,16 +1,6 @@
 /**
  * This file contains essentialy vis.js timeline customized style 
  */
-
-/* hand cursor when selecting time bar */
-.vis-custom-time {
-    cursor : pointer;
-}
-
-.timeline-tools {
-    margin-top: 70px;
-}
-
 .startover-group {
     height: 100px;
     min-height: 100px;
@@ -21,15 +11,16 @@
 }
 
 .timeline-object {
-    margin: 15px;
     margin-top: 30px;
-    margin-bottom: 10px;
+}
+
+.vis-custom-time {
+    cursor : pointer;
 }
 
 .vis-timeline {
     font-size: 14pt;
     background: #FFFFFF;
-    font-family: Roboto;
 }
 
 .vis-item {
@@ -77,13 +68,11 @@
 .vis-left label {
     font-size: 14pt;
     color: black;
-    font-family: Roboto
 }
 
 .vis-center label {
     font-size: 12pt;
     color: white;
-    font-family: Roboto
 }
 
 .caipy-group {

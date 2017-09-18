@@ -48,7 +48,7 @@ class Flowchart extends Component {
 
     render() {
         return (
-            <div className="flowchart" ref={div => this.chart = div} onClick={e => this.handleClick(e)} />
+            <div className={this.props.className ? this.props.className : "flowchart"} ref={div => this.chart = div} onClick={e => this.handleClick(e)} />
         );
     };
 }

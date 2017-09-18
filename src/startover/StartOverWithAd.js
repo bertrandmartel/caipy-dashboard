@@ -340,7 +340,6 @@ function searchBeforeProgram(state, programStartEvent, caipyData, programStart, 
         state ^= startOverState["startover_ad_after_sharpstart"].mask;
         return [state, adAfterSharpStart];
     } else {
-        console.log("[01221] - [FAIL] Didn't found an ad after sharpstart");
     }
 
     state ^= startOverState["startover_epg_program_start"].mask;
