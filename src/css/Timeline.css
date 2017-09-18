@@ -2,8 +2,8 @@
  * This file contains essentialy vis.js timeline customized style 
  */
 .startover-group {
-    height: 100px;
-    min-height: 100px;
+    height: 80px;
+    min-height: 80px;
 }
 
 .timeline-container {
@@ -26,7 +26,6 @@
 .vis-item {
     background-color: #4182F2;
     color: black;
-    font-family : "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
 .vis-item.vis-selected {
@@ -66,12 +65,10 @@
 }
 
 .vis-left label {
-    font-family : "Roboto", "Helvetica", "Arial", sans-serif;
     color: black;
 }
 
 .vis-center label {
-    font-family : "Roboto", "Helvetica", "Arial", sans-serif;
     color: white;
 }
 
