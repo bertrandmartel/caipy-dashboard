@@ -60,7 +60,7 @@ class CaipyDataSet extends TableSet.DataSet {
                     
                   <Table>
                     <TableHead className={classes.head}>
-                      <TableRow>
+                      <TableRow className={classes.rowHead}>
                         <TableCell>Time</TableCell>
                         <TableCell>Clip</TableCell>
                         <TableCell numeric>Duration</TableCell>

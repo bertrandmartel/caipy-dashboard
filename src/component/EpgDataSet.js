@@ -66,7 +66,7 @@ export class EpgDataSet extends TableSet.DataSet {
                     
                   <Table>
                     <TableHead className={classes.head}>
-                      <TableRow>
+                      <TableRow className={classes.rowHead}>
                         <TableCell>Event ID</TableCell>
                         <TableCell>Title</TableCell>
                         <TableCell>Start</TableCell>

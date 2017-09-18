@@ -9,6 +9,9 @@ export const styles = theme => ({
         fontSize: 18,
         color: 'black'
     },
+    rowHead: {
+        height: 50
+    },
     stepText: {
         verticalAlign: 'middle',
         marginLeft: 20,
@@ -24,7 +27,7 @@ export const styles = theme => ({
         width: 350,
         display: 'flex',
         justifyContent: 'space-between',
-        float:'right'
+        float: 'right'
     }
 });
 
