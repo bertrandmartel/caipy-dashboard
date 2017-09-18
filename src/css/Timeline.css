@@ -25,8 +25,8 @@
 
 .vis-item {
     background-color: #4182F2;
-    font-size: 15pt;
     color: black;
+    font-family : "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
 .vis-item.vis-selected {
@@ -66,19 +66,15 @@
 }
 
 .vis-left label {
-    font-size: 14pt;
+    font-family : "Roboto", "Helvetica", "Arial", sans-serif;
     color: black;
 }
 
 .vis-center label {
-    font-size: 12pt;
+    font-family : "Roboto", "Helvetica", "Arial", sans-serif;
     color: white;
 }
 
 .caipy-group {
     background-color: #EEEEEE;
-}
-
-.vis-label .vis-inner {
-    max-height: 100px;
 }
