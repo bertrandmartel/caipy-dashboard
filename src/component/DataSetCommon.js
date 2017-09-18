@@ -21,7 +21,7 @@ export const styles = theme => ({
         fontSize: 15
     },
     stepContainer: {
-        width: 300,
+        width: 350,
         display: 'flex',
         justifyContent: 'space-between',
         float:'right'
