@@ -132,7 +132,7 @@ const styles = theme => ({
         backgroundColor: theme.palette.background.default,
         width: '100%',
         padding: theme.spacing.unit * 3,
-        height: '100%',
+        height: 'calc(100% - 100px)',
         maxHeight: '100%',
         marginTop: 56,
         [theme.breakpoints.up('sm')]: {
