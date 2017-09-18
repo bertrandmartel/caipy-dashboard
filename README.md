@@ -7,14 +7,34 @@ A ReactJS powered material dashboard featuring Ad detection in TV programs from 
 
 ### [Live Application](http://bertrandmartel.github.io/caipy-dashboard)
 
-[![dashboard](https://user-images.githubusercontent.com/5183022/29038991-e12d4822-7ba9-11e7-8b19-d7471958a8ea.png)](http://bertrandmartel.github.io/caipy-dashboard)
+The aim is to calculate program startover time in 2 distinct mode : 
+
+* with advertisement
+* without advertisement
+
+Both algorithm are detailed in a flowchart with the specific path taken to compute the startover time  
+
+[![dashboard](https://user-images.githubusercontent.com/5183022/30557997-4f56be1a-9cb0-11e7-9b9b-a711c713703f.png)](http://bertrandmartel.github.io/caipy-dashboard)
+
+Selection filters available : 
+
+* date (start/end)
+* preset (used to aggregate/disaggregate ad)
+* TV channel
+* mode (with & without ad)
+
+[![flowchart](https://user-images.githubusercontent.com/5183022/30558124-b89581d6-9cb0-11e7-9a33-cc5ce5fe1f9b.png)](http://bertrandmartel.github.io/caipy-dashboard)
 
 This project is using :
 
 * [React](https://github.com/facebook/react)
-* [React materialize](https://github.com/react-materialize/react-materialize)
-* [materialize](https://github.com/Dogfalo/materialize)
+* [Material UI](https://github.com/callemall/material-ui)
 * [vis](https://github.com/almende/vis)
+* [flowchart.js](https://github.com/adrai/flowchart.js)
+* [React infinite calendar](https://github.com/clauderic/react-infinite-calendar)
+* [moment](https://github.com/moment/moment)
+* [moment duration format](https://github.com/jsmreese/moment-duration-format)
+* [React numeric input](https://github.com/vlad-ignatov/react-numeric-input)
 
 This project has been created using [create-react-app](https://github.com/facebookincubator/create-react-app)
 
