@@ -4,6 +4,9 @@ import { withStyles } from 'material-ui/styles';
 import Paper from 'material-ui/Paper';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import MobileStepper from 'material-ui/MobileStepper';
+import Button from 'material-ui/Button';
+import KeyboardArrowLeft from 'material-ui-icons/KeyboardArrowLeft';
+import KeyboardArrowRight from 'material-ui-icons/KeyboardArrowRight';
 
 import moment from 'moment';
 
@@ -22,24 +25,45 @@ export class EpgDataSet extends TableSet.DataSet {
         const classes = this.props.classes;
         this.data = this.props.rows;
 
-        var dataRow = [];
-        var length = 0;
-
         if (this.data) {
-            dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
-            length = this.props.rows.length;
-        }
+            var dataRow = [];
+            var length = 0;
 
-        return <Paper className={classes.paper}>
-                    <MobileStepper
-                      type="text"
-                      steps={Math.ceil(this.props.rows.length / this.props.perPage)}
-                      position="static"
-                      activeStep={this.state.pageIndex}
-                      className={classes.mobileStepper}
-                      onBack={this.handleBack}
-                      onNext={this.handleNext}
-                    /><p className={classes.stepText}>{(this.state.pageIndex-1)*this.props.perPage + 1}-{(this.state.pageIndex-1)*this.props.perPage+this.props.perPage} of {length}</p>
+            if (this.data) {
+                dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
+                length = this.props.rows.length;
+            }
+
+            var maxValue = (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage;
+
+            if (this.state.pageIndex === this.getMax()) {
+                maxValue = length;
+            }
+
+            return <Paper className={classes.paper}>
+                    <div className={classes.stepContainer}>
+                      <p className={classes.stepText}>{(this.state.pageIndex-1)*this.props.perPage + 1}-{maxValue} of {length}</p>
+                      <MobileStepper
+                        type="text"
+                        steps={Math.ceil(this.props.rows.length / this.props.perPage)}
+                        position="static"
+                        activeStep={this.state.pageIndex}
+                        className={classes.mobileStepper}
+                        nextButton={
+                          <Button dense onClick={this.handleNext} disabled={this.state.pageIndex === this.getMax()}>
+                            Next
+                            <KeyboardArrowRight />
+                          </Button>
+                        }
+                        backButton={
+                          <Button dense onClick={this.handleBack} disabled={this.state.pageIndex === 1}>
+                            <KeyboardArrowLeft />
+                            Back
+                          </Button>
+                        }
+                      />
+                    </div>
+                    
                   <Table>
                     <TableHead className={classes.head}>
                       <TableRow>
@@ -49,7 +73,7 @@ export class EpgDataSet extends TableSet.DataSet {
                         <TableCell>End</TableCell>
                       </TableRow>
                     </TableHead>
-                    <TableBody>
+                    <TableBody className={classes.body}>
                       {dataRow.map(n => {
                         return (
                           <TableRow key={this.props.name+":"+n.event_id}>
@@ -63,7 +87,9 @@ export class EpgDataSet extends TableSet.DataSet {
                     </TableBody>
                   </Table>
                 </Paper>;
-
+        } else {
+            return <Paper className={classes.paper}></Paper>;
+        }
         /*
         return <CollectionItem className="coll-item" key={this.props.name + "-coll"}>
                     <Pagination items={Math.round(length/this.props.perPage)} 

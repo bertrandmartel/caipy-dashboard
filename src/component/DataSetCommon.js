@@ -3,7 +3,6 @@ import { Component } from 'react';
 export const styles = theme => ({
     paper: {
         width: '100%',
-        marginTop: 20,
         overflowX: 'auto',
     },
     head: {
@@ -12,11 +11,20 @@ export const styles = theme => ({
     },
     stepText: {
         verticalAlign: 'middle',
-        marginTop: 20
+        marginLeft: 20,
+        marginTop: 21
     },
     mobileStepper: {
-        float: "left",
         background: 'white'
+    },
+    body: {
+        fontSize: 15
+    },
+    stepContainer: {
+        width: 300,
+        display: 'flex',
+        justifyContent: 'space-between',
+        float:'right'
     }
 });
 
@@ -39,6 +47,7 @@ export class DataSet extends Component {
         super();
         this.handleBack = this.handleBack.bind(this);
         this.handleNext = this.handleNext.bind(this);
+        this.getMax = this.getMax.bind(this);
     }
 
     handleBack() {
@@ -50,8 +59,12 @@ export class DataSet extends Component {
         }
     }
 
+    getMax() {
+        return Math.ceil(this.props.rows.length / this.props.perPage);
+    }
+
     handleNext() {
-        if (this.step < Math.ceil(this.props.rows.length / this.props.perPage)) {
+        if (this.step < this.getMax()) {
             this.step++;
             this.setState({
                 pageIndex: this.step

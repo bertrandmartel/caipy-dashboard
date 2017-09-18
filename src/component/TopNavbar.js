@@ -11,25 +11,34 @@ import Code from 'material-ui-icons/Code';
 import Settings from 'material-ui-icons/Settings';
 import Share from 'material-ui-icons/Share';
 import Chip from 'material-ui/Chip';
+import classNames from 'classnames';
 
 const styles = theme => ({
-    root: {
-        width: '100%',
-    },
-    flex: {
+    flexOpen: {
         flex: 1,
+        marginLeft: 25
+    },
+    flexClosed: {
+        flex: 1,
+        marginLeft: 11
     },
     menuButton: {
-        marginLeft: 12,
+        marginLeft: 6,
         marginRight: 20,
     },
     button: {
-        marginLeft: 10,
         marginRight: 10
     },
+    lastButton: {
+        marginRight: 20
+    },
     chip: {
+        marginRight: 10,
         backgroundColor: 'white'
-    }
+    },
+    hide: {
+        display: 'none',
+    },
 });
 
 /**
@@ -40,6 +49,7 @@ class TopNavbar extends Component {
     constructor(props) {
         super(props);
         this.urlSettings = this.urlSettings.bind(this);
+        this.handleDrawerOpen = this.handleDrawerOpen.bind(this);
     }
 
     /**
@@ -60,6 +70,12 @@ class TopNavbar extends Component {
         }
     }
 
+    handleDrawerOpen() {
+        if (typeof this.props.onHandleDrawerOpen === 'function') {
+            this.props.onHandleDrawerOpen();
+        }
+    }
+
     /**
      * Share this page
      */
@@ -72,31 +88,35 @@ class TopNavbar extends Component {
     render() {
         const { classes } = this.props;
 
-        return (<div className={classes.root}>
-                  <AppBar position="static">
+        return (<AppBar position="static" className={this.props.className}>
                     <Toolbar disableGutters>
-                      <IconButton className={classes.menuButton} color="contrast" aria-label="Menu">
+                      <IconButton
+                        color="contrast"
+                        aria-label="open drawer"
+                        onClick={this.handleDrawerOpen}
+                        className={classNames(classes.menuButton, this.props.drawerOpen && classes.hide)}
+                      >
                         <MenuIcon />
                       </IconButton>
-                      <Typography type="title" color="inherit" className={classes.flex}>
+
+                      <Typography type="headline" color="inherit" className={this.props.drawerOpen ? classes.flexOpen : classes.flexClosed}>
                         {'Caipy Dashboard v' + process.env.REACT_APP_VERSION}
                       </Typography>
-                      <IconButton onClick={() => this.globalSettings()} color="contrast" className={classes.button} aria-label="settings">
+                      <IconButton onClick={() => this.globalSettings()} color="contrast" aria-label="settings">
                         <Settings />
                       </IconButton>
-                      <IconButton onClick={() => this.share()} color="contrast" className={classes.button} aria-label="share">
+                      <IconButton onClick={() => this.share()} className={classes.button} color="contrast" aria-label="share">
                         <Share />
                       </IconButton>
                       <Chip ref={(buttonUrl) => { this.buttonUrl = buttonUrl; }} 
                             onClick={() => this.urlSettings()} 
                             label={this.props.mode + " mode"} 
                             className={classes.chip} />
-                      <IconButton color="contrast" className={classes.button} aria-label="source code" href="https://github.com/bertrandmartel/caipy-dashboard">
+                      <IconButton color="contrast" className={classes.lastButton} aria-label="source code" href="https://github.com/bertrandmartel/caipy-dashboard">
                         <Code />
                       </IconButton>
                     </Toolbar>
-                  </AppBar>
-                </div>)
+                  </AppBar>)
 
         /*
         return <Navbar href={process.env.PUBLIC_URL+"/"} brand={'Caipy Dashboard v' + process.env.REACT_APP_VERSION} className="blue darken-1" right>

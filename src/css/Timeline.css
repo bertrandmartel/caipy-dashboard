@@ -14,10 +14,13 @@
     margin-top: 30px;
 }
 
+.vis-custom-time {
+    cursor : pointer;
+}
+
 .vis-timeline {
     font-size: 14pt;
     background: #FFFFFF;
-    font-family: Roboto;
 }
 
 .vis-item {
@@ -65,13 +68,11 @@
 .vis-left label {
     font-size: 14pt;
     color: black;
-    font-family: Roboto
 }
 
 .vis-center label {
     font-size: 12pt;
     color: white;
-    font-family: Roboto
 }
 
 .caipy-group {

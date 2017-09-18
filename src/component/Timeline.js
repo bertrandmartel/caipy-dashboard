@@ -43,6 +43,8 @@ const styles = theme => ({
     }
 });
 
+var timeWindow = {};
+
 /**
  * The Timeline object used to render a vis.js timeline
  */
@@ -68,7 +70,7 @@ class TimelineContainer extends Component {
      */
     startOverState = 0;
 
-    startover = "with advertisement";
+    startover = "with ad";
 
     constructor(props) {
         super(props);
@@ -122,6 +124,9 @@ class TimelineContainer extends Component {
      * 
      */
     componentDidUpdate() {
+        if (this.props.data.length === 0) {
+            return;
+        }
         switch (this.props.actionType) {
             case "options-timeline":
                 var options = this.getOptions(this.timeline.getWindow(), this.props.options);
@@ -188,7 +193,7 @@ class TimelineContainer extends Component {
     computeStartOver() {
         var startOver;
 
-        if (this.startover === "with advertisement") {
+        if (this.startover === "with ad") {
             startOver = StartOverWithAd.computeWithAdStartover(this.currentTime,
                 this.props.caipyData,
                 this.props.epgData,
@@ -201,7 +206,7 @@ class TimelineContainer extends Component {
                 this.props.onSetStartOverChart(StartOverCommon.buildChartCode(StartOverWithAd.startOverState, StartOverWithAd.chartCode, startOver.state), StartOverCommon.chartOptions);
             }
 
-        } else if (this.startover === "without advertisement") {
+        } else if (this.startover === "without ad") {
             startOver = StartOverWithoutAd.computeWithoutAdStartover(this.currentTime,
                 this.props.caipyData,
                 this.props.epgData,
@@ -282,6 +287,7 @@ class TimelineContainer extends Component {
     }
 
     setCustomTime(time) {
+        timeWindow = this.timeline.getWindow();
         this.clearCustomTime();
         this.setCurrentTime(time);
         this.timeline.addCustomTime(time, time);
@@ -395,8 +401,10 @@ class TimelineContainer extends Component {
 
         var window;
 
-        if (!this.props.keepCurrentWindow) {
+        if (!this.props.keepCurrentWindow || (create && !timeWindow.start)) {
             window = this.getWindow(config.data.items);
+        } else if (this.props.keepCurrentWindow && create && timeWindow.start) {
+            window = timeWindow;
         } else {
             window = this.timeline.getWindow();
         }
@@ -430,7 +438,7 @@ class TimelineContainer extends Component {
                 time: config.overrideOptions.currentTime
             });
         } else {
-            if (!this.props.keepCurrentWindow) {
+            if (!this.props.keepCurrentWindow || create) {
                 this.createCustomTime(window);
             } else {
                 this.computeStartOver();

@@ -2,7 +2,7 @@
 import 'vis/dist/vis.css';
 //import 'materialize-css/dist/css/materialize.min.css';
 //import './css/MaterialColor.css';
-import './css/Footer.css';
+//import './css/Footer.css';
 import './css/Timeline.css';
 import './css/App.css';
 
@@ -12,11 +12,20 @@ import moment from 'moment';
 import React, { Component } from 'react';
 
 import { createMuiTheme, MuiThemeProvider } from 'material-ui/styles';
-
+import Drawer from 'material-ui/Drawer';
+import Divider from 'material-ui/Divider';
+import List from 'material-ui/List';
+import PropTypes from 'prop-types';
+import { withStyles } from 'material-ui/styles';
+import MenuData from './component/MenuData.js';
 import ProgressView from './component/ProgressView.js';
+import classNames from 'classnames';
+import IconButton from 'material-ui/IconButton';
+import ChevronLeftIcon from 'material-ui-icons/ChevronLeft';
+import BuildIcon from 'material-ui-icons/Build';
+import Typography from 'material-ui/Typography';
 
 // other react components
-import { FilterView } from './component/Filter.js';
 import GlobalSettingsView from './component/GlobalSettings.js'
 import UrlDialog from './component/UrlDialog.js';
 import SectionTabs from './component/SectionTabs.js';
@@ -33,12 +42,118 @@ import * as Constant from './constants/Constant.js';
 //import utils 
 import * as Utils from './utils/Utils.js';
 
-require('materialize-css/dist/js/materialize.min.js');
+const drawerWidth = 240;
 
 const theme = createMuiTheme({
     palette: {
         type: 'light', // Switching the dark mode on is a single property value change.
     },
+});
+
+const styles = theme => ({
+    root: {
+        width: '100%',
+        height: '100%',
+        zIndex: 1,
+        overflow: 'hidden',
+    },
+    appFrame: {
+        position: 'relative',
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+    },
+    appBar: {
+        position: 'absolute',
+        zIndex: theme.zIndex.navDrawer + 1,
+        transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+    },
+    appBarShift: {
+        marginLeft: drawerWidth,
+        width: `calc(100% - ${drawerWidth}px)`,
+        transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    },
+    menuButton: {
+        marginLeft: 12,
+        marginRight: 36,
+    },
+    hide: {
+        display: 'none',
+    },
+    drawerPaper: {
+        position: 'relative',
+        width: drawerWidth,
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+        overflow: 'hidden',
+        border: '0px !important',
+        height: '100%',
+    },
+    drawerPaperClose: {
+        width: 60,
+        overflowX: 'hidden',
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+    },
+    drawerInner: {
+        // Make the items inside not wrap when transitioning:
+        width: drawerWidth,
+        height: '100%',
+    },
+    drawerHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        padding: '0 8px',
+        ...theme.mixins.toolbar,
+    },
+    dockedDrawer: {
+        height: '100%',
+    },
+    list: {
+        border: 0,
+        marginTop: 24,
+        paddingTop: 0,
+        height: 'calc(100% - 100px)',
+        overflowY: 'overlay'
+        //height:(window.innerHeight-64)
+    },
+    content: {
+        backgroundColor: theme.palette.background.default,
+        width: '100%',
+        padding: theme.spacing.unit * 3,
+        height: '100%',
+        maxHeight: '100%',
+        marginTop: 56,
+        [theme.breakpoints.up('sm')]: {
+            marginTop: 64,
+        },
+        overflowY: 'overlay'
+    },
+    drawerBorder: {
+        borderRight: '1px solid rgba(0, 0, 0, 0.12);',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.12);',
+        height: '100%'
+    },
+    listContainer: {
+        height: '100%',
+    },
+    titleCentered: {
+        margin: '0 auto'
+    },
+    iconHeadline: {
+        marginLeft: 10
+    }
 });
 
 /**
@@ -66,7 +181,8 @@ class App extends Component {
         options: this.options,
         startDate: this.date.startDate,
         endDate: this.date.endDate,
-        openUrlDialog: false
+        openUrlDialog: false,
+        drawerOpen: true
     };
 
     /**
@@ -127,11 +243,11 @@ class App extends Component {
     };
 
     startovers = [
-        "with advertisement",
-        "without advertisement",
+        "with ad",
+        "without ad",
     ];
 
-    startoverType = "with advertisement";
+    startoverType = "with ad";
 
     /**
      * Global settings.
@@ -148,6 +264,9 @@ class App extends Component {
     urlDialog = false;
     settingsDialog = false;
     flowchartDialog = false;
+
+    windowSizeTemp = 0;
+    dropProgramTemp = 0;
 
     constructor() {
         super();
@@ -171,6 +290,10 @@ class App extends Component {
         this.openUrlSettings = this.openUrlSettings.bind(this);
         this.openSettings = this.openSettings.bind(this);
         this.closeDialog = this.closeDialog.bind(this);
+        this.handleDrawerOpen = this.handleDrawerOpen.bind(this);
+        this.handleDrawerClose = this.handleDrawerClose.bind(this);
+        this.windowSizeTemp = this.settings.windowSize;
+        this.dropProgramTemp = this.settings.dropProgram;
         this.initPreset();
     }
 
@@ -356,7 +479,6 @@ class App extends Component {
      * @param  {String} actionType action to perform
      */
     updateState(actionType, keepCurrentWindow, overrideOptions) {
-
         this.setState({
             actionType: actionType,
             ready: true,
@@ -428,7 +550,6 @@ class App extends Component {
             endDate: this.date.endDate
         });
 
-
         ApiUtils.getData(this.mode,
             this.date.startDate, this.date.endDate,
             this.settings.dropProgram,
@@ -496,7 +617,7 @@ class App extends Component {
     setChannel(channel) {
         this.channel = channel;
         Storage.setChannel(channel);
-        this.refresh("update", false);
+        this.refresh("update", true);
     }
 
     setFlowChartOpacity(opacity) {
@@ -520,12 +641,14 @@ class App extends Component {
 
         var update = false;
 
-        if (settings.windowSize !== this.settings.windowSize) {
+        if (settings.windowSize !== this.windowSizeTemp) {
             //update options and update the window
             nextState = "options-global";
+            this.windowSizeTemp = settings.windowSize;
         }
-        if (settings.dropProgram !== this.settings.dropProgram) {
+        if (settings.dropProgram !== this.dropProgramTemp) {
             update = true;
+            this.dropProgramTemp = settings.dropProgram;
         }
 
         this.settings = JSON.parse(JSON.stringify(settings));
@@ -646,82 +769,136 @@ class App extends Component {
         window.prompt("Copy to clipboard: Ctrl+C, Enter", url);
     }
 
+    handleDrawerOpen() {
+        this.setState({ drawerOpen: true });
+    }
+
+    handleDrawerClose() {
+        this.setState({ drawerOpen: false });
+    }
+
     render() {
+        const { classes } = this.props;
         return (
             <MuiThemeProvider theme={theme}>
-                <div className="body">
-                    <div className="main">
+                <div className={classes.root}>
+                    <div className={classes.appFrame}>
 
                         <TopNavbar mode={this.state.mode}
                                    onShare={this.share}
                                    onOpenUrlSettings={this.openUrlSettings}
-                                   onOpenSettings={this.openSettings}/>
+                                   onOpenSettings={this.openSettings}
+                                   drawerOpen={this.state.drawerOpen}
+                                   onHandleDrawerOpen={this.handleDrawerOpen}
+                                   className={classNames(classes.appBar, this.state.drawerOpen && classes.appBarShift)}/>
 
-                        <FilterView onSetFilterSettings={this.setFilterSettings}
-                                    onPresetChange={this.setPreset}
-                                    onChannelChange={this.setChannel}
-                                    onStartOverChange={this.setStartOverType}
-                                    mode={this.state.mode}
-                                    startDate={this.date.startDate}
-                                    endDate={this.date.endDate}
-                                    presets={this.presets}
-                                    startover={this.startoverType}
-                                    startovers={this.startovers}
-                                    channels={this.channels}
-                                    preset={this.preset}
-                                    channel={this.channel}/>
+                        <div className={classes.drawerBorder}>
+                            <Drawer
+                              type="permanent"
+                              classes={{
+                                  paper: classNames(classes.drawerPaper, !this.state.drawerOpen && classes.drawerPaperClose),
+                                }}
+                              className={classes.dockedDrawer}
+                              open={this.state.drawerOpen}
+                            >
+                              <div className={classes.drawerInner}>
+                                    <div className={classes.drawerHeader}>
+                                        
+                                        <BuildIcon className={classes.iconHeadline}/>
+                                        <Typography type="headline" color="inherit" className={classes.titleCentered}>
+                                            {'Start Over'}
+                                        </Typography>
+                                      
+                                        <IconButton onClick={this.handleDrawerClose}>
+                                          <ChevronLeftIcon />
+                                        </IconButton>
+                                    </div>
+                                    <Divider />
+                                    <div className={classes.listContainer}>
+                                        <List className={classes.list}>
+                                            <MenuData 
+                                                theme={theme}
+                                                channel={this.channel}
+                                                channels={this.channels}
+                                                preset={this.preset}
+                                                presets={this.presets}
+                                                startover={this.startoverType}
+                                                startovers={this.startovers}
+                                                startDate={this.date.startDate}
+                                                endDate={this.date.endDate}
+                                                onChannelChange={this.setChannel}
+                                                onPresetChange={this.setPreset}
+                                                onStartOverChange={this.setStartOverType}
+                                                onSetFilterSettings={this.setFilterSettings}
+                                                drawerOpen={this.state.drawerOpen}
+                                                onHandleDrawerOpen={this.handleDrawerOpen}
+                                                />
+                                        </List>
+                                    </div>
+                                </div>
+                            </Drawer>
+                        </div>
+                        <main className={classes.content}>
 
-                        <SectionTabs ready={this.state.ready} 
-                                       items={this.state.items} 
-                                       caipyData={this.state.caipyData}
-                                       epgData={this.state.epgData}
-                                       actionType={this.state.actionType}
-                                       options={this.options}
-                                       settings={this.settings}
-                                       onPlayRolling={this.playRolling}
-                                       onPauseRolling={this.pauseRolling}
-                                       onSetStartOverChart={this.setStartOverChart}
-                                       keepCurrentWindow={this.state.keepCurrentWindow}
-                                       onOpenFlowChart={this.openFlowChart}
-                                       onUpdateOptions={this.updateOptions}
-                                       overrideOptions={this.state.overrideOptions}
-                                       startover={this.startoverType}
-                                       />
+                            <SectionTabs ready={this.state.ready} 
+                                           items={this.state.items} 
+                                           caipyData={this.state.caipyData}
+                                           epgData={this.state.epgData}
+                                           actionType={this.state.actionType}
+                                           options={this.options}
+                                           settings={this.settings}
+                                           onPlayRolling={this.playRolling}
+                                           onPauseRolling={this.pauseRolling}
+                                           onSetStartOverChart={this.setStartOverChart}
+                                           keepCurrentWindow={this.state.keepCurrentWindow}
+                                           onOpenFlowChart={this.openFlowChart}
+                                           onUpdateOptions={this.updateOptions}
+                                           overrideOptions={this.state.overrideOptions}
+                                           startover={this.startoverType}
+                                           />
 
-                        <ProgressView value={this.state.ready}
-                                      message={this.state.message}/>
+                            <ProgressView value={this.state.ready}
+                                          message={this.state.message}/>
 
-                        <UrlDialog mode={this.state.mode}
-                                      url={this.state.url}
-                                      open={this.urlDialog}
-                                      onSetUrlSettings={this.setUrlSettings}
-                                      onSetMode={this.setMode}
-                                      onDialogClose={this.closeDialog}/>
+                            <UrlDialog mode={this.state.mode}
+                                          url={this.state.url}
+                                          open={this.urlDialog}
+                                          onSetUrlSettings={this.setUrlSettings}
+                                          onSetMode={this.setMode}
+                                          onDialogClose={this.closeDialog}/>
 
-                        <GlobalSettingsView 
-                                      settings={this.settings}
-                                      settingsStyle={this.settingsStyle}
-                                      onGlobalSettings={this.updateGlobalSettings}
-                                      onRefreshGlobalSettingsView={this.refreshGlobalSettingsView}
-                                      onDialogClose={this.closeDialog}
-                                      open={this.settingsDialog}/>
+                            <GlobalSettingsView 
+                                          settings={this.settings}
+                                          settingsStyle={this.settingsStyle}
+                                          onGlobalSettings={this.updateGlobalSettings}
+                                          onRefreshGlobalSettingsView={this.refreshGlobalSettingsView}
+                                          onDialogClose={this.closeDialog}
+                                          open={this.settingsDialog}/>
 
-                        <FlowChartView 
-                            flowChartOpacity={this.flowChartOpacity}
-                            state={this.startover.state}
-                            chartCode={this.startover.chartCode}
-                            chartOptions={this.startover.chartOptions}
-                            onSetFlowChartOpacity={this.setFlowChartOpacity}
-                            startoverType={this.startoverType}
-                            onDialogClose={this.closeDialog}
-                            open={this.flowchartDialog}/>
-                    </div>                    
-                    <div className="footer-copyright">
-                        <a href="https://github.com/bertrandmartel" rel="noopener noreferrer" target="_blank">Copyright (c) 2017 Bertrand Martel</a>
+                            <FlowChartView 
+                                flowChartOpacity={this.flowChartOpacity}
+                                state={this.startover.state}
+                                chartCode={this.startover.chartCode}
+                                chartOptions={this.startover.chartOptions}
+                                onSetFlowChartOpacity={this.setFlowChartOpacity}
+                                startoverType={this.startoverType}
+                                onDialogClose={this.closeDialog}
+                                open={this.flowchartDialog}/>
+                        </main>
+                        {/*                   
+                        <div className="footer-copyright">
+                            <a href="https://github.com/bertrandmartel" rel="noopener noreferrer" target="_blank">Copyright (c) 2017 Bertrand Martel</a>
+                        </div>*/
+                        }
                     </div>
-                 </div>
+                </div>
              </MuiThemeProvider>
         );
     }
 }
-export default App;
+
+App.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(App);

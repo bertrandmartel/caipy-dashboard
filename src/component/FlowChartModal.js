@@ -1,21 +1,24 @@
 /* eslint-disable flowtype/require-valid-file-annotation */
 
 import React, { Component } from 'react';
-import Button from 'material-ui/Button';
 import Dialog, {
-    DialogActions,
     DialogContent,
     DialogTitle,
 } from 'material-ui/Dialog';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
+import Slide from 'material-ui/transitions/Slide';
+import AppBar from 'material-ui/AppBar';
+import Toolbar from 'material-ui/Toolbar';
+import IconButton from 'material-ui/IconButton';
+import Typography from 'material-ui/Typography';
+import CloseIcon from 'material-ui-icons/Close';
 
 import Flowchart from './FlowChart.js';
 
 const styles = theme => ({
-    dialog: {
-        maxWidth: 900,
-        width: '100%'
+    title: {
+        margin: '0 auto'
     }
 });
 
@@ -29,7 +32,6 @@ class FlowChartView extends Component {
         options: {}
     };
 
-    opacity = false;
     created = false;
 
     constructor(props) {
@@ -37,29 +39,11 @@ class FlowChartView extends Component {
         this.close = this.close.bind(this);
     }
 
-    componentDidMount() {
-        this.opacity = this.props.flowChartOpacity;
-        this.setOpacity();
-    }
-
     close() {
         if (typeof this.props.onDialogClose === 'function') {
             this.props.onDialogClose();
         }
     };
-
-    setOpacity() {
-        /*
-        //waiting for react materialize to implement className on modal
-        if (!this.opacity) {
-            $('#flowchart-modal').css('background-color', 'rgba(255, 255, 255, 0.5)');
-        } else {
-            $('#flowchart-modal').css('background-color', 'rgba(255, 255, 255, 255)');
-        }
-        this.props.onSetFlowChartOpacity(this.opacity);
-        this.opacity = !this.opacity;
-        */
-    }
 
     /**
      * handle the enter key
@@ -71,6 +55,8 @@ class FlowChartView extends Component {
     }
 
     render() {
+        const { classes } = this.props;
+
         if (this.props.chartCode) {
             this.chartParams.chartCode = this.props.chartCode;
         }
@@ -84,70 +70,41 @@ class FlowChartView extends Component {
 
             return <div>
                     <Dialog 
+                        fullScreen
                         open={this.props.open} 
-                        onRequestClose={this.close}>
+                        onRequestClose={this.close}
+                        transition={<Slide direction="up" />}>
+                        <AppBar className={classes.appBar}>
+                            <Toolbar>
+                              <IconButton color="contrast" onClick={this.close} aria-label="Close">
+                                <CloseIcon />
+                              </IconButton>
+                              <Typography type="title" color="inherit" className={classes.flex}>
+                                Close
+                              </Typography>
+                              <Typography type="title" color="inherit" className={classes.title}>
+                                {'Start Over Flowchart : ' + this.props.startoverType}
+                              </Typography>
+                            </Toolbar>
+                        </AppBar>
                         <DialogTitle>{'Start Over Flowchart : ' + this.props.startoverType}</DialogTitle>
                         <DialogContent>
                           <Flowchart
-                                
                                 chartCode={this.chartParams.chartCode}
                                 options={this.chartParams.chartOptions}
                             />
                         </DialogContent>
-                        <DialogActions>
-                          <Button onClick={() => this.setOpacity()}>Toggle opacity</Button>   
-                          <Button onClick={() => this.close()}>Close</Button>
-                        </DialogActions>
                     </Dialog>
                 </div>
         } else {
             return <div>
-                    <Dialog open={this.props.open} onRequestClose={this.close}>
+                    <Dialog fullScreen open={this.props.open} onRequestClose={this.close} transition={<Slide direction="up" />}>
                         <DialogTitle>{'Start Over Flowchart : ' + this.props.startoverType}</DialogTitle>
                         <DialogContent>
                         </DialogContent>
-                        <DialogActions>
-                          <Button onClick={() => this.setOpacity()}>Toggle opacity</Button>   
-                          <Button onClick={() => this.close()}>Close</Button>
-                        </DialogActions>
                     </Dialog>
                 </div>
         }
-        /*
-        if (this.created || this.props.state === "create") {
-            
-            this.created = true;
-
-            return <Modal
-                    fixedFooter
-                    id="flowchart-modal"
-                    header={'Start Over Flowchart : ' + this.props.startoverType}
-                    actions={
-                        <div>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.setOpacity()}>Toggle opacity</Button>
-                        </div>
-                    }
-                    >
-                    <Flowchart
-                        chartCode={this.chartParams.chartCode}
-                        options={this.chartParams.chartOptions}
-                    />
-                </Modal>
-        } else {
-            return <Modal
-                    fixedFooter
-                    id="flowchart-modal"
-                    header='Start Over flowchart'
-                    actions={
-                        <div>
-                            <Button className="blue darken-1" waves='light' onClick={() => this.close()}>Close</Button>
-                        </div>
-                    }
-                    >
-                </Modal>
-        }
-        */
     }
 }
 

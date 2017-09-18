@@ -4,6 +4,9 @@ import { withStyles } from 'material-ui/styles';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import MobileStepper from 'material-ui/MobileStepper';
+import Button from 'material-ui/Button';
+import KeyboardArrowLeft from 'material-ui-icons/KeyboardArrowLeft';
+import KeyboardArrowRight from 'material-ui-icons/KeyboardArrowRight';
 
 import * as TableSet from './DataSetCommon';
 
@@ -22,18 +25,39 @@ class CaipyDataSet extends TableSet.DataSet {
         const classes = this.props.classes;
         this.data = this.props.rows;
 
-        var dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
+        if (this.data) {
+            var dataRow = this.props.rows.slice((this.state.pageIndex - 1) * this.props.perPage, (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage);
 
-        return <Paper className={classes.paper}>
-                    <MobileStepper
-                      type="text"
-                      steps={Math.ceil(this.props.rows.length / this.props.perPage)}
-                      position="static"
-                      activeStep={this.state.pageIndex}
-                      className={classes.mobileStepper}
-                      onBack={this.handleBack}
-                      onNext={this.handleNext}
-                    /><p className={classes.stepText}>{(this.state.pageIndex-1)*this.props.perPage + 1}-{(this.state.pageIndex-1)*this.props.perPage+this.props.perPage} of {this.props.length}</p>
+            var maxValue = (this.state.pageIndex - 1) * this.props.perPage + this.props.perPage;
+
+            if (this.state.pageIndex === this.getMax()) {
+                maxValue = this.props.length;
+            }
+
+            return <Paper className={classes.paper}>
+                    <div className={classes.stepContainer}>
+                      <p className={classes.stepText}>{(this.state.pageIndex-1)*this.props.perPage + 1}-{maxValue} of {this.props.length}</p>
+                      <MobileStepper
+                        type="text"
+                        steps={Math.ceil(this.props.rows.length / this.props.perPage)}
+                        position="static"
+                        activeStep={this.state.pageIndex}
+                        className={classes.mobileStepper}
+                        nextButton={
+                          <Button dense onClick={this.handleNext} disabled={this.state.pageIndex === this.getMax()}>
+                            Next
+                            <KeyboardArrowRight />
+                          </Button>
+                        }
+                        backButton={
+                          <Button dense onClick={this.handleBack} disabled={this.state.pageIndex === 1}>
+                            <KeyboardArrowLeft />
+                            Back
+                          </Button>
+                        }
+                      />
+                    </div>
+                    
                   <Table>
                     <TableHead className={classes.head}>
                       <TableRow>
@@ -42,7 +66,7 @@ class CaipyDataSet extends TableSet.DataSet {
                         <TableCell numeric>Duration</TableCell>
                       </TableRow>
                     </TableHead>
-                    <TableBody>
+                    <TableBody className={classes.body}>
                       {dataRow.map(n => {
                         return (
                           <TableRow key={this.props.name+":"+n.time}>
@@ -55,7 +79,9 @@ class CaipyDataSet extends TableSet.DataSet {
                     </TableBody>
                   </Table>
                 </Paper>;
-
+        } else {
+            return <Paper className={classes.paper}></Paper>;
+        }
         /*
         return <CollectionItem className="coll-item" key={this.props.name + "-coll"}>
 

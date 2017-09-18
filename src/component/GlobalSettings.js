@@ -157,6 +157,7 @@ class GlobalSettingsView extends Component {
         this.data["dropProgram"] = Constant.cutProgramDuration;
 
         this.props.onRefreshGlobalSettingsView(resp);
+        this.validateSettings();
         this.close();
         //this.setState(resp);
     }
