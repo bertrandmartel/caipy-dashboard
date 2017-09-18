@@ -138,7 +138,7 @@ const styles = theme => ({
         [theme.breakpoints.up('sm')]: {
             marginTop: 64,
         },
-        overflowY: 'overlay'
+        overflow: 'overlay'
     },
     drawerBorder: {
         borderRight: '1px solid rgba(0, 0, 0, 0.12);',
