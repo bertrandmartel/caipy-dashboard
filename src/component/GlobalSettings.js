@@ -24,13 +24,16 @@ import { DurationPicker } from './DurationPicker.js';
 const styles = theme => ({
     root: {},
     title: {
-        margin: `${theme.spacing.unit * 4}px 0 ${theme.spacing.unit * 2}px`,
+        marginRight: `${theme.spacing.unit * 4}px 0 ${theme.spacing.unit * 2}px`,
+        marginLeft: `${theme.spacing.unit * 4}px 0 ${theme.spacing.unit * 2}px`,
     },
     dialogContent: {
         width: 600
     },
     listItem: {
-        height:70
+        height: 70,
+        paddingTop: 0,
+        paddingBottom: 0
     }
 });
 
