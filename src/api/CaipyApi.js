@@ -46,8 +46,8 @@ export function getData(mode, startDate, endDate, cutProgramDuration, preset, ch
         var data = require('./demo-config/demo-data.json');
         var channels = require('./demo-config/demo-tf1.json');
 
-        var epgResult = getDemoProgram(channels, cutProgramDuration);
-        var caipyResult = getDemoEvents(data, epgResult.channels);
+        var epgResult = getDemoProgram(JSON.parse(JSON.stringify(channels)), cutProgramDuration);
+        var caipyResult = getDemoEvents(JSON.parse(JSON.stringify(data)), epgResult.channels);
 
         var items = buildChannelMap(startDate, endDate, caipyResult.channels, epgResult.programs.name);
 
@@ -164,8 +164,9 @@ export function getDemoProgram(channels, cutDuration) {
 
     var epgItems = [];
 
+    console.log("cutDuration : " + cutDuration);
     //populate events
-    for (var j = 0; j < channels.events.length; j++) {
+    for (var j = channels.events.length - 1; j >= 0; j--) {
 
         var start = channels.events[j].start;
         var end = channels.events[j].end;
