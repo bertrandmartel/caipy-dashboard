@@ -9,9 +9,11 @@ import IconButton from 'material-ui/IconButton';
 import MenuIcon from 'material-ui-icons/Menu';
 import Code from 'material-ui-icons/Code';
 import Settings from 'material-ui-icons/Settings';
+import FullscreenIcon from 'material-ui-icons/Fullscreen';
 import Share from 'material-ui-icons/Share';
 import Chip from 'material-ui/Chip';
 import classNames from 'classnames';
+import Tooltip from 'material-ui/Tooltip';
 
 const styles = theme => ({
     flexOpen: {
@@ -77,6 +79,41 @@ class TopNavbar extends Component {
     }
 
     /**
+     * https://stackoverflow.com/a/32100295/2614364
+     */
+    fullscreen() {
+        // if already full screen; exit
+        // else go fullscreen
+        if (
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+        ) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        } else {
+            var element = document.body;
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+    }
+
+    /**
      * Share this page
      */
     share() {
@@ -102,19 +139,37 @@ class TopNavbar extends Component {
                       <Typography type="headline" color="inherit" className={this.props.drawerOpen ? classes.flexOpen : classes.flexClosed}>
                         {'Caipy Dashboard v' + process.env.REACT_APP_VERSION}
                       </Typography>
-                      <IconButton onClick={() => this.globalSettings()} color="contrast" aria-label="settings">
-                        <Settings />
-                      </IconButton>
-                      <IconButton onClick={() => this.share()} className={classes.button} color="contrast" aria-label="share">
-                        <Share />
-                      </IconButton>
-                      <Chip ref={(buttonUrl) => { this.buttonUrl = buttonUrl; }} 
-                            onClick={() => this.urlSettings()} 
-                            label={this.props.mode + " mode"} 
-                            className={classes.chip} />
-                      <IconButton color="contrast" className={classes.lastButton} aria-label="source code" href="https://github.com/bertrandmartel/caipy-dashboard">
-                        <Code />
-                      </IconButton>
+
+                      <Tooltip enterDelay={500} disableTriggerFocus label="settings" placement="bottom">
+                          <IconButton onClick={() => this.globalSettings()} color="contrast" aria-label="settings">
+                            <Settings />
+                          </IconButton>
+                      </Tooltip>
+
+                      <Tooltip enterDelay={500} disableTriggerFocus label="share this page" placement="bottom">
+                          <IconButton onClick={() => this.share()} className={classes.button} color="contrast" aria-label="share">
+                            <Share />
+                          </IconButton>
+                      </Tooltip>
+
+                      <Tooltip enterDelay={500}  disableTriggerFocus label="change mode" placement="bottom">
+                          <Chip ref={(buttonUrl) => { this.buttonUrl = buttonUrl; }} 
+                                onClick={() => this.urlSettings()} 
+                                label={this.props.mode + " mode"} 
+                                className={classes.chip} />
+                      </Tooltip>
+
+                      <Tooltip enterDelay={500}  disableTriggerFocus label="fullscreen" placement="bottom">
+                          <IconButton onClick={() => this.fullscreen()} className={classes.button} color="contrast" aria-label="share">
+                            <FullscreenIcon />
+                          </IconButton>
+                      </Tooltip>
+
+                      <Tooltip enterDelay={500}  disableTriggerFocus label="source code" placement="bottom">
+                          <IconButton color="contrast" className={classes.lastButton} aria-label="source code" href="https://github.com/bertrandmartel/caipy-dashboard">
+                            <Code />
+                          </IconButton>
+                      </Tooltip>
                     </Toolbar>
                   </AppBar>)
 

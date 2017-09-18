@@ -1,6 +1,6 @@
 {
   "name": "caipy-dashboard",
-  "version": "2.0.1",
+  "version": "2.0.4",
   "private": true,
   "homepage": "https://bertrandmartel.github.io/caipy-dashboard",
   "dependencies": {

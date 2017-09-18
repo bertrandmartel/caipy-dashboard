@@ -141,8 +141,7 @@ const styles = theme => ({
         overflow: 'overlay'
     },
     drawerBorder: {
-        borderRight: '1px solid rgba(0, 0, 0, 0.12);',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.12);',
+        borderRight: '1px solid #E0E0E0',
         height: '100%'
     },
     listContainer: {

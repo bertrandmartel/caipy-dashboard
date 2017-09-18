@@ -14,6 +14,7 @@ import FastRewind from 'material-ui-icons/FastRewind';
 import PlayArrow from 'material-ui-icons/PlayArrow';
 import Stop from 'material-ui-icons/Stop';
 import Timeline from 'material-ui-icons/Timeline';
+import Tooltip from 'material-ui/Tooltip';
 
 import Toolbar from 'material-ui/Toolbar';
 
@@ -466,9 +467,11 @@ class TimelineContainer extends Component {
                                 <IconButton className={classes.button}  onClick={() => this.zoomOut()}>
                                     <ZoomOut />
                                 </IconButton>
-                                <IconButton className={classes.button}  onClick={() => this.stackToggle()}>
-                                    <ClearAll />
-                                </IconButton>
+                                <Tooltip enterDelay={500}  disableTriggerFocus label="toggle stack" placement="bottom">
+                                    <IconButton className={classes.button}  onClick={() => this.stackToggle()}>
+                                        <ClearAll />
+                                    </IconButton>
+                                </Tooltip>
                                 <IconButton className={classes.button}  onClick={() => this.slowerRolling()}>
                                     <FastRewind />
                                 </IconButton>
@@ -481,9 +484,11 @@ class TimelineContainer extends Component {
                                 <IconButton className={classes.button}  onClick={() => this.fasterRolling()}>
                                     <FastForward />
                                 </IconButton>
-                                <IconButton className={classes.button}  onClick={() => this.openTree()}>
-                                    <Timeline />
-                                </IconButton>
+                                <Tooltip enterDelay={500}  disableTriggerFocus label="show flowchart" placement="bottom">
+                                    <IconButton className={classes.button}  onClick={() => this.openTree()}>
+                                        <Timeline />
+                                    </IconButton>
+                                </Tooltip>
                             </Toolbar>
                         }
                         <div className="timeline-container" id={this.props.data.channelName}></div>
