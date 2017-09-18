@@ -384,6 +384,7 @@ class App extends Component {
                 Storage.setMode("live");
                 this.mode = "live";
                 this.initPreset();
+                this.initChannel();
             } else {
                 console.log("invalid mode or invalid url");
             }
@@ -573,6 +574,7 @@ class App extends Component {
         Storage.setMode("live");
         this.mode = "live";
         this.initPreset();
+        this.initChannel();
         this.refresh("update", false);
     }
 
