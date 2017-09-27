@@ -7,7 +7,7 @@ A ReactJS powered material dashboard featuring Ad detection in TV programs from 
 
 ### [Live Application](http://bertrandmartel.github.io/caipy-dashboard)
 
-The aim is to calculate program startover time in 2 distinct mode : 
+The aim is to calculate program startover time in 2 distinct mode :
 
 * with advertisement
 * without advertisement
@@ -16,7 +16,7 @@ Both algorithm are detailed in a flowchart with the specific path taken to compu
 
 [![dashboard](https://user-images.githubusercontent.com/5183022/30557997-4f56be1a-9cb0-11e7-9b9b-a711c713703f.png)](http://bertrandmartel.github.io/caipy-dashboard)
 
-Selection filters available : 
+Selection filters available :
 
 * date (start/end)
 * preset (used to aggregate/disaggregate ad)
@@ -37,6 +37,22 @@ This project is using :
 * [React numeric input](https://github.com/vlad-ignatov/react-numeric-input)
 
 This project has been created using [create-react-app](https://github.com/facebookincubator/create-react-app)
+
+### Docker
+
+Modify `homepage` field from `package.json` to match the target host :
+
+* build
+
+```
+docker build . -t caipy-dashboard
+```
+
+* run
+
+```
+docker run -p 5000:5000 caipy-dashboard
+```
 
 ## License
 
