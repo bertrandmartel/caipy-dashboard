@@ -1,8 +1,6 @@
 The MIT License (MIT)
 
-Copyright for portions of project Developer Portfolio are held by Blackrock Digital LLC, 2013-2016 
-as part of project Start Bootstrap - Freelancer. 
-All other copyright for project Developer Portfolio are held by Bertrand Martel, 2017.
+Copyright (c) 2017 Bertrand Martel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
