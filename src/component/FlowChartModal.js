@@ -7,7 +7,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
-import Slide from 'material-ui/transitions/Slide';
+//import Slide from 'material-ui/transitions/Slide';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import IconButton from 'material-ui/IconButton';
@@ -47,7 +47,7 @@ class FlowChartView extends Component {
 
     /**
      * handle the enter key
-     * 
+     *
      * @param  {Object} e event
      */
     handleKeyPress(e) {
@@ -69,11 +69,10 @@ class FlowChartView extends Component {
             this.created = true;
 
             return <div>
-                    <Dialog 
+                    <Dialog
                         fullScreen
-                        open={this.props.open} 
-                        onRequestClose={this.close}
-                        transition={<Slide direction="up" />}>
+                        open={this.props.open}
+                        onRequestClose={this.close}>
                         <AppBar className={classes.appBar}>
                             <Toolbar>
                               <IconButton color="contrast" onClick={this.close} aria-label="Close">
@@ -98,7 +97,7 @@ class FlowChartView extends Component {
                 </div>
         } else {
             return <div>
-                    <Dialog fullScreen open={this.props.open} onRequestClose={this.close} transition={<Slide direction="up" />}>
+                    <Dialog fullScreen open={this.props.open} onRequestClose={this.close} >
                         <DialogTitle>{'Start Over Flowchart : ' + this.props.startoverType}</DialogTitle>
                         <DialogContent>
                         </DialogContent>
